@@ -1,6 +1,6 @@
 {
   "name": "Kaggle GPU",
-  "image": "gcr.io/kaggle-gpu-images/python:v172@sha256:9a6bcfda6d03b2cd9aa347ee8c1bae62043328ed0f4afe9bda014e4f8bbf9435",
+  "image": "gcr.io/kaggle-gpu-images/python:latest",
   "runArgs": [
     "--gpus=all",
     "--shm-size=2g",

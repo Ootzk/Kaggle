@@ -1,37 +1,47 @@
 # Kaggle
 
-Kaggle notebooks and HTML execution reports, organized by competition and versioned with Git.
+Kaggle notebook source and published execution reports, organized by competition.
+
+- [Published reports](https://ootzk.github.io/Kaggle/)
+- [Digit Recognizer — Baseline](https://ootzk.github.io/Kaggle/digit-recognizer/baseline.html)
+
+## Development environment
+
+Use one VS Code Dev Container for notebook development, execution, HTML export, and Git operations. The Ubuntu host supplies Docker Engine, the NVIDIA driver and Container Toolkit, and forwarded Git authentication.
+
+The container has two parts:
+
+| Part | Responsibility |
+| --- | --- |
+| Official `gcr.io/kaggle-gpu-images/python:latest` | GPU runtime, `/usr/bin/python3`, and the supplied scientific/notebook packages |
+| Repository management layer in [Dockerfile](.devcontainer/Dockerfile) | Non-root workspace user, isolated notebook Git tools, and Git LFS |
+
+Keep scientific packages from the base image. Manage Git tools at explicit versions under `/opt/kaggle-git-tools`; they do not replace the notebook interpreter. The base deliberately follows `latest`: pull before rebuilding, repeat validation, and keep resolved digests and machine diagnostics in untracked local logs.
+
+See [Ubuntu setup](docs/ubuntu-setup.md) for container startup, GPU validation, Git filters, and authentication.
+
+## Repository layout
+
+```text
+competitions/<competition-slug>/
+  baseline.ipynb          # regular Git; committed without outputs
+  kernel-metadata.json   # Kaggle execution settings, when needed
+  data/                  # ignored local data
+  output/                # ignored generated artifacts
+reports/<competition-slug>/
+  baseline.html          # Git LFS; includes execution outputs
+  baseline.json          # regular Git; source/report identity
+```
+
+Competition directory names follow their Kaggle URL slugs. Working notebooks retain outputs; the Git clean filter strips outputs and execution counts from the index. HTML preserves code, Markdown, tables, plots, and logs. After cloning, use `git lfs pull` if reports appear as pointer files.
 
 ## Workflow
 
-1. Develop on Ubuntu with an NVIDIA GPU, using VS Code Dev Containers and the official `gcr.io/kaggle-gpu-images/python:latest` image.
-2. Run locally with the container's Python kernel, then connect VS Code to a remote Kaggle Jupyter GPU kernel when Kaggle resources are needed. Check the selected kernel before execution.
-3. Export executed notebooks to HTML inside the container, with tables, plots, and logs included.
-4. Use Git in the Dev Container through VS Code Source Control or its terminal to commit notebook source and HTML reports, push to GitHub, and publish reports through GitHub Pages.
-5. Submit competition entries on Kaggle.
+1. Open the repository in the Kaggle GPU Dev Container and confirm the intended kernel.
+2. Obtain competition and dataset inputs through **KaggleHub**. Reuse existing local data; always use the path returned by KaggleHub when resolving or downloading it. See [data access](docs/data-access.md).
+3. Develop and execute locally. For Kaggle GPU execution, select its remote Jupyter kernel or push a private notebook; check the environment independently.
+4. Save local execution outputs and [export the report](docs/report-publishing.md) inside the container. Export does not retrain the model.
+5. Commit source, HTML, and its manifest together, then push the feature branch and merge into `main` when ready.
+6. GitHub Pages deploys matching reports from **`main` only**. Feature branches and pull requests do not publish.
 
-Git tracks notebook code and Markdown with outputs and execution counts stripped. Working notebooks retain their results; HTML reports preserve execution results for publication. Notebook development and Git operations share one container VS Code window. VS Code forwards authentication from the Ubuntu host.
-
-## Setup
-
-Follow [Ubuntu GPU setup and validation](docs/ubuntu-setup.md). Docker Engine runs directly on Ubuntu and needs the NVIDIA Container Toolkit for `--gpus all`.
-
-The [Dev Container configuration](.devcontainer/devcontainer.json) builds a thin development image from the official Kaggle GPU `latest` image. It adds a non-root user for Linux workspace ownership and installs Git tools in an isolated Python environment without upgrading the image's scientific packages. The repository is mounted at `/workspaces/Kaggle`; Python and Jupyter extensions run inside the container.
-
-The [Dockerfile](.devcontainer/Dockerfile) declares the versions of `nbstripout` and `nbdime` and installs them in `/opt/kaggle-git-tools`. No host Python environment or project dependency manifest is needed for these tools. The notebook interpreter remains `/usr/bin/python3`.
-
-On every container start, `.devcontainer/configure-git.sh` registers the notebook filter and diff/merge drivers in the repository's local Git configuration. Fresh clones and recreated containers use the same setup automatically. The container's Source Control integration is enabled. Run Git inside the container; its driver settings use container tools.
-
-After VS Code attaches, its credential helper forwards requests to the host. The attachment hook routes URL-specific helpers through this proxy as well. Credentials and private authentication files are not copied into the image or repository. See [Git and authentication setup](docs/ubuntu-setup.md#notebook-git-inside-the-container).
-
-The image deliberately follows `latest`. Pull it before rebuilding to adopt an update, then repeat environment validation. Record the resolved image digest and package versions in untracked local diagnostics rather than pinning the configuration.
-
-## Organization and status
-
-Store notebook source in `competitions/<competition-slug>/` and HTML reports in `reports/<competition-slug>/`. Competition slugs follow their Kaggle URLs. Put local data in `data/`, `datasets/`, or `input/`, and generated artifacts in the ignored `output/`, `working/`, `models/`, `checkpoints/`, `submissions/`, `logs/`, `runs/`, `tmp/`, or `temp/` directories at the root or directly within a competition. Keep HTML reports and required resources outside those ignored directories.
-
-HTML reports use Git LFS; JSON source manifests remain regular Git files. Run `git lfs pull` after cloning if HTML files are pointers. Pages Actions downloads actual LFS content before deployment.
-
-Credentials, environments, and caches are ignored. `.env.example` and `.env.template` remain trackable.
-
-The [Digit Recognizer baseline](competitions/digit-recognizer/README.md) has completed local and Kaggle GPU execution. Its [HTML report](reports/digit-recognizer/baseline.html) preserves local outputs. See [report publishing](docs/report-publishing.md) for export, preview, and Pages deployment. See [AGENTS.md](AGENTS.md) for project guidelines and handoff status.
+Kaggle notebook execution and competition prediction submission are separate actions. The [Digit Recognizer guide](competitions/digit-recognizer/README.md) covers the current baseline. [AGENTS.md](AGENTS.md) records repository rules.

@@ -69,7 +69,7 @@ def main():
         assert merged["cells"][0]["source"] == ["x = 2\n"]
         assert merged["cells"][1]["source"] == ["y = 3\n"]
 
-        # A fresh checkout has no local driver configuration or host venv.
+        # A fresh checkout has no repository-local Git driver configuration.
         fresh = folder / "fresh checkout"
         (fresh / ".devcontainer").mkdir(parents=True)
         for name in ("git-tools.sh", "configure-git.sh"):

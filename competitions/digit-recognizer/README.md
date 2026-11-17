@@ -1,49 +1,55 @@
-# Digit Recognizer GPU baseline
+# Digit Recognizer
 
-Open `baseline.ipynb` in the Kaggle GPU Dev Container. Use the container Python kernel for the local run.
+## Baseline
 
-1. Accept any required terms on the [competition page](https://www.kaggle.com/competitions/digit-recognizer/data).
-2. Run the environment cell first and check the host, interpreter, and GPU.
-3. Copy the repository-root `.env.example` to `.env` and set `KAGGLE_API_TOKEN` there. The file is ignored by Git; never put a token in the notebook or a tracked file. Run the data preparation cell. Existing `data/train.csv` and `data/test.csv` are used without authentication. Otherwise the cell loads the root `.env` using `load_dotenv(override=False)` from the image-supplied `python-dotenv` and reads the token through `os.environ` and downloads through `kagglehub.competition_download`. An existing `KAGGLE_API_TOKEN` environment variable takes precedence. KaggleHub reads the token from the environment without printing it. After changing `.env`, restart the kernel and rerun the notebook so previously loaded environment values do not persist. Authentication failure stops execution; check the token and competition terms before retrying.
-4. Inspect validation accuracy, the confusion matrix, and `output/submission.csv`. No competition submission is performed automatically.
-5. For the remote run, attach the competition data to a Kaggle GPU notebook/session. Obtain its VS Code compatible Jupyter server URL, connect VS Code to that server, and select its Python kernel for this local notebook. Check the environment cell again before training.
-6. Run the same notebook on the remote GPU. Existing project CSVs are reused. Otherwise, `kagglehub.competition_download` downloads locally or resolves/attaches data on Kaggle. Always read the returned directory: Kaggle can ignore `output_dir`. Generated files go to the project `output` directory; with Kaggle’s default working directory this is `/kaggle/working/digit-recognizer/output`. Copy remote results locally if needed.
+A small PyTorch CNN trained for five epochs on a stratified 80/20 split with seed 42. The notebook records the environment and evaluates validation accuracy, precision, recall, F1, and digit-level errors.
 
-The baseline uses a stratified 80/20 split, seed 42, and a small CNN for five epochs. Versions are printed by the environment cell. GPU results can vary between runs and machines. Keep working notebook outputs for inspection; Git inside the Dev Container strips outputs when staging. HTML export follows completion of both execution checks.
+- [Competition](https://www.kaggle.com/competitions/digit-recognizer)
+- [Data description](https://www.kaggle.com/competitions/digit-recognizer/data)
+- [Published baseline report](https://ootzk.github.io/Kaggle/digit-recognizer/baseline.html)
+- [Private Kaggle notebook](https://www.kaggle.com/code/pocariblitz/digit-recognizer-gpu-baseline)
 
-Never commit Jupyter connection URLs or tokens. Connection and kernel selection require the active Kaggle session; a local CUDA check does not verify the remote environment.
+## Local execution
 
-Local `data/` and `output/` are real directories in the mounted Ubuntu repository, survive container replacement, and are ignored by Git.
+1. Open `baseline.ipynb` in the Kaggle GPU Dev Container and select `/usr/bin/python3`.
+2. Configure `KAGGLE_API_TOKEN` in the repository-root `.env` using `.env.example`. Accept the competition rules if required.
+3. Run the environment cell and confirm CUDA computation succeeds.
+4. Run the remaining cells. Existing `data/train.csv` and `data/test.csv` are reused. Missing data is downloaded with `kagglehub.competition_download`; the returned directory is used to read the CSVs.
+5. Inspect the figures and generated files under `output/`.
+
+The notebook locates this competition directory from the repository root or a directory inside the repository. It loads the root `.env` with `load_dotenv(override=False)`; KaggleHub reads the token from the environment. Restart the kernel after changing an already-loaded token. See [data access](../../docs/data-access.md) for the shared policy.
+
+Local `data/` and `output/` are ignored directories in the bind-mounted repository and survive container replacement.
+
+## Remote Kaggle execution
+
+For interactive execution, start a Kaggle GPU Jupyter session, connect VS Code using its compatible server URL, and select the remote Python kernel for the local notebook. Run the environment cell before training. KaggleHub resolves the remote data path; it may ignore `output_dir`. Results stay on the server, normally under `/kaggle/working/digit-recognizer/output/`.
+
+For batch execution, `kernel-metadata.json` targets `pocariblitz/digit-recognizer-gpu-baseline` with GPU, internet access, Digit Recognizer competition data, and `is_private: true`. Package the intended output-stripped notebook source and metadata before `kaggle kernels push`. Exclude `.env` and local files from that package. The API or CLI may push notebooks, inspect status, retrieve run outputs, and submit predictions; input downloads always use KaggleHub.
+
+A notebook push creates and runs a version; it does not submit predictions to the competition. Never commit connection URLs or tokens. Record and inspect local and remote environments independently; GPU results can differ.
+
+## Results
+
+- Local five-epoch validation accuracy: **0.980357**; macro F1: **0.980100**.
+- Kaggle competition submission accuracy: **0.97778**.
+
+Validation uses the held-out labeled split; the leaderboard evaluates the competition test set. These are separate measurements.
 
 ## Interactive diagnostics
 
-Plotly displays label counts, one image per digit, training/validation loss curves, validation accuracy and macro precision/recall/F1 curves, a confusion matrix, and per-digit metrics. The final gallery shows up to ten misclassified validation images ranked by predicted probability, with true/predicted labels and their softmax probabilities. These probabilities are not calibrated, and the examples do not imply that every error is visually ambiguous. Plotly assets are embedded by the notebook renderer for offline viewing.
+Plotly displays label counts, one training example per digit, training/validation loss, overall accuracy, precision/recall/F1 curves, a confusion matrix, and final digit-level metrics.
 
-Precision, recall, and F1 curves share grouped legend entries for `Overall (macro)` and digits 0–9. Overall is visible initially; click a digit to toggle it across all three panels, or double-click to isolate it. The final metric comparison uses the same target labels. Per-epoch overall and digit metrics are saved in `output/validation_metrics_by_digit.csv`.
+The metric legend toggles `Overall (macro)` and digits 0–9 across all three panels. The final gallery shows the ten most confident validation errors in descending order, with true/predicted labels and their probabilities below each image. Softmax scores are not calibrated confidence estimates.
 
-## Private Kaggle execution
+Generated files include `submission.csv`, `training_history.csv`, and `validation_metrics_by_digit.csv`. No competition submission is sent automatically.
 
-`kernel-metadata.json` targets `pocariblitz/digit-recognizer-gpu-baseline` with GPU execution, internet access, the Digit Recognizer competition data, and explicit `is_private: true`. `kernels push` uploads and runs a notebook version; it does not send its predictions to the competition leaderboard.
+## Report export
 
-The first API upload used the clean notebook from Git commit `7bd2c5c`, packaged with this metadata under `.git/kaggle-devcontainer/kernel-push/`. Working outputs and `.env` were excluded. Kaggle accepted version 1 at [the private notebook](https://www.kaggle.com/code/pocariblitz/digit-recognizer-gpu-baseline). Authentication was loaded from the local `.env` using `load_dotenv()` before initializing the image-supplied `KaggleApi`.
+Save outputs, then run from the repository root:
 
-For CLI calls from this container, load `.env` into the child process without shell-sourcing it:
-
-```python
-import subprocess
-from dotenv import load_dotenv
-
-load_dotenv(".env", override=False)
-subprocess.run(
-    ["kaggle", "kernels", "status", "pocariblitz/digit-recognizer-gpu-baseline"],
-    check=True,
-)
+```bash
+/usr/bin/python3 scripts/export_report.py competitions/digit-recognizer/baseline.ipynb
 ```
 
-An upload can use `kaggle kernels push -p .git/kaggle-devcontainer/kernel-push` after refreshing that package from the intended clean Git commit. Confirm `is_private: true` in its metadata before uploading. Download generated artifacts into an ignored output directory; never overwrite the local notebook source with remote code automatically.
-
-## Published report
-
-Notebook source lives in `competitions/digit-recognizer/`; saved local data and outputs stay in its ignored `data/` and `output/` folders. Exported HTML and its source manifest live in `reports/digit-recognizer/`.
-
-From the repository root, run `/usr/bin/python3 scripts/export_report.py competitions/digit-recognizer/baseline.ipynb` after saving outputs. Follow [report publishing](../../docs/report-publishing.md) for preview and deployment. Export does not execute training.
+The report and manifest go to `reports/digit-recognizer/`. Export does not execute cells. Follow [report publishing](../../docs/report-publishing.md) for preview, Git LFS, and `main`-only Pages deployment.

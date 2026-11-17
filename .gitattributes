@@ -1,14 +1,8 @@
-# Use LF for text in Git and in Windows/Linux working trees.
+# Use LF for text files in the Ubuntu Dev Container.
 * text=auto eol=lf
-*.ipynb text eol=lf
 
-# Windows command scripts require CRLF in the working tree.
-*.bat text eol=crlf
-*.cmd text eol=crlf
+# Notebook source stays in regular Git with outputs stripped.
+*.ipynb text eol=lf filter=nbstripout diff=jupyternotebook merge=jupyternotebook
 
-*.ipynb filter=nbstripout
-*.zpln filter=nbstripout
-*.ipynb diff=jupyternotebook merge=jupyternotebook
-
-# Keep generated report HTML in LFS; JSON source manifests remain regular Git files.
+# Generated HTML uses LFS; source manifests stay in regular Git.
 reports/**/*.html filter=lfs diff=lfs merge=lfs -text

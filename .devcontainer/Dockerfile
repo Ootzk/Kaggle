@@ -2,13 +2,13 @@ ARG KAGGLE_IMAGE=gcr.io/kaggle-gpu-images/python:latest
 FROM ${KAGGLE_IMAGE}
 
 USER root
+# Management layer: user setup and Git tools; preserve supplied scientific packages.
 # Keep Git tools separate from the image's scientific Python environment.
 # wrapt is needed by the base interpreter's Kaggle sitecustomize hook.
 RUN git --version \
     && uv venv /opt/kaggle-git-tools --python /usr/bin/python3 --no-managed-python --no-python-downloads \
     && UV_SYSTEM_PYTHON=false uv pip install --python /opt/kaggle-git-tools/bin/python --no-cache \
         nbstripout==0.9.1 nbdime==4.0.4 wrapt==1.17.3
-
 
 # Standalone Git LFS stays with the isolated Git tools, not scientific Python.
 ARG GIT_LFS_VERSION=3.8.1

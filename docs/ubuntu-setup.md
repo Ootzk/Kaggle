@@ -37,11 +37,11 @@ docker info --format '{{range $name, $runtime := .Runtimes}}{{$name}} {{end}}'
 
 The runtime list should now include `nvidia`. The helper does not restart Docker automatically because restarting the daemon can interrupt other containers.
 
-## Notebook Git inside the container
+## Management layer and container Git
 
 Use VS Code Source Control and the integrated terminal in the Dev Container for staging, commits, pulls, and pushes. Notebook editing, execution, and Git operations share one VS Code window.
 
-The Dockerfile installs `nbstripout` and `nbdime` at explicit versions into `/opt/kaggle-git-tools`, using the `uv` supplied by the official image. It also installs `wrapt` there for the base interpreter's Kaggle startup hook. This environment excludes system site packages and is not added to `PATH`, so notebook execution continues to use `/usr/bin/python3` and the supplied scientific packages. The host `.venv`, `pyproject.toml`, and `uv.lock` are not part of this workflow. Update Git tool versions in the Dockerfile and rebuild through Dev Containers.
+The Dockerfile installs `nbstripout` and `nbdime` at explicit versions into `/opt/kaggle-git-tools`, using the `uv` supplied by the official image. It also installs `wrapt` there for the base interpreter's Kaggle startup hook. This environment excludes system site packages and is not added to `PATH`, so notebook execution continues to use `/usr/bin/python3` and the supplied scientific packages. The management layer does not replace the notebook interpreter or manage scientific dependencies. Update Git tool versions in the Dockerfile and rebuild through Dev Containers.
 
 The Dockerfile also installs a pinned, checksum-verified standalone Git LFS binary in `/opt/kaggle-git-tools/bin`, exposed through `/usr/local/bin/git-lfs`, without changing scientific Python. HTML reports use LFS; manifests remain regular Git files.
 
@@ -168,17 +168,17 @@ The CPU quota divided by its period gives the CPU allowance; `max` means unlimit
 
 ## Execution and publication
 
-Run [Digit Recognizer](../competitions/digit-recognizer/README.md) locally first, then on a remote Kaggle GPU kernel. Remote execution reads the Kaggle server filesystem, independently of the Ubuntu container mount. Attach the competition data and confirm the remote environment and accelerator settings. Do not commit connection URLs or tokens.
+Run [Digit Recognizer](../competitions/digit-recognizer/README.md) locally first, then on a remote Kaggle GPU kernel. Use [KaggleHub for input downloads and remote data resolution](data-access.md). Reuse local files when available and always read from the path returned by KaggleHub. Remote execution reads the Kaggle server filesystem, independently of the Ubuntu container mount; confirm its environment and accelerator settings. Do not commit connection URLs or tokens.
 
 HTML export follows both execution checks. Export inside the container from a working notebook with outputs, verify tables/plots/logs and referenced resources, and keep reports outside ignored artifact directories. Reports live in `reports/<competition>/`; use the [report publishing workflow](report-publishing.md) to export, preview, and deploy.
 
 ## Validation status
 
-Ubuntu host Docker, the NVIDIA driver, and NVIDIA Container Toolkit are available. A disposable Ubuntu container passed GPU visibility through `--gpus all`. Dev Container configuration resolution passed.
+Ubuntu container startup, matching non-root workspace ownership, `/usr/bin/python3`, scientific imports, effective resource limits, and real PyTorch CUDA computation have passed validation. Repeat validation after each base image update; resolved digests and detailed machine diagnostics remain untracked in `.git/kaggle-devcontainer/`.
 
-The official Kaggle GPU `latest` image download and Dev Container build/startup passed on Ubuntu. The configured interpreter `/usr/bin/python3`, non-root workspace writes with matching host ownership, scientific/notebook imports, and a real PyTorch CUDA computation passed. Effective CPU, memory, and swap limits matched the configuration. Resolved image digests and detailed diagnostics remain in `.git/kaggle-devcontainer/`. Repeat validation after updating `latest`.
+Notebook Git output stripping, working-output preservation, diff/merge, and fresh-repository registration passed. Forwarded GitHub authentication passed from the attached container. Local and remote Kaggle GPU baseline runs completed; results and report links are in the [competition guide](../competitions/digit-recognizer/README.md).
 
-Container notebook Git checks passed: actual staging stripped outputs while preserving working outputs and the original index, notebook diff and semantic merge succeeded, and fresh-repository registration was idempotent. Scientific package versions matched the pre-build environment and CUDA computation passed. VS Code configured its host credential proxy during attachment; the attached container passed an authenticated GitHub `/user` request with `python .devcontainer/verify_git_auth.py`. The local Jupyter `python3` kernel executed the Digit Recognizer environment cell using `/usr/bin/python3` and passed CUDA computation. Detailed kernel output stays in `.git/kaggle-devcontainer/local-kernel-check.ipynb`. VS Code notebook kernel selection remains an interactive check. The working baseline notebook completed all local cells without errors, including five training epochs and submission generation. Final local validation accuracy was 0.9803571428571428; the ignored data directory contains the competition CSVs. Set `KAGGLE_API_TOKEN` in the ignored repository-root `.env`, following `.env.example`, then rerun the data preparation cell. Kaggle GPU notebook v2 completed and its competition submission scored 0.97778. HTML export and Pages deployment use the report publishing workflow.
+Git LFS upload/download, a fresh clone, and Pages deployment have passed. The Dockerfile now declares the Git LFS installation; a full image rebuild after that addition has not yet been validated. Save working notebooks before a rebuild. Kernel selection still needs to be confirmed interactively for each execution session.
 
 ## Official references
 

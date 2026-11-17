@@ -55,8 +55,8 @@ The Pages workflow is `.github/workflows/pages.yml`. Only pushes to `main` that 
 
 GitHub Pages must use **GitHub Actions** as its publishing source. The `github-pages` environment must permit the deployment branch. The workflow:
 
-1. Checks source/report digests with standard-library Python. It never trains or exports notebooks.
-2. Downloads actual HTML with LFS-aware checkout (`lfs: true`) and an explicit `git lfs pull`, then copies only `reports/<competition>/*.html` and generates an index with relative links. The build rejects unresolved LFS pointers.
+1. Downloads actual HTML with LFS-aware checkout (`lfs: true`) and an explicit `git lfs pull`.
+2. Checks source/report digests with standard-library Python, rejects unresolved LFS pointers, then copies only `reports/<competition>/*.html` and generates an index with relative links. It never trains or exports notebooks.
 3. Uploads that directory as the Pages artifact and deploys it with `pages: write` and `id-token: write` permissions.
 
 Only report HTML and the index are published; source files, JSON manifests, data directories, and credentials are excluded from the site artifact.
@@ -68,11 +68,11 @@ Public URLs:
 
 Git preserves older HTML versions; the site shows the latest successful deployment.
 
-## Verified deployment
+## Verification status
 
-The initial deployment from commit `95ad742` completed successfully in [GitHub Actions](https://github.com/Ootzk/Kaggle/actions/runs/44075475308). Both public URLs returned HTTP 200, and the served report matched the committed HTML byte-for-byte. Browser verification passed for all eight Plotly charts, grouped digit legend toggles, and the ten error-gallery captions, with no external resource requests or JavaScript errors. Local diagnostics and screenshots remain untracked under `.git/kaggle-devcontainer/`.
+The initial Pages publication and the subsequent LFS-backed deployment passed. Both public URLs returned HTTP 200, and the report matched the committed HTML byte-for-byte. Browser checks passed for all eight Plotly charts, grouped digit legend toggles, and ten error-gallery captions, with no external resource requests or JavaScript errors. Fresh-clone LFS retrieval and notebook Git output-preservation checks also passed.
 
-The moved competition directory passed notebook Git staging/output-preservation and diff/merge verification. Local CSVs and outputs remain ignored and preserved under `competitions/digit-recognizer/`.
+The initial publication used the setup branch before the policy was restricted. Future deployments require `main`; changing that policy does not replace the previously published site until a new deployment succeeds. Local evidence and screenshots remain untracked under `.git/kaggle-devcontainer/`.
 
 ## Git LFS report storage
 

@@ -24,37 +24,20 @@ credentials.json
 *.pem
 *.key
 
-# Data and execution artifacts at the root or inside a competition.
-# Keep report resources outside these directories.
+# Repository-root data and execution artifacts.
+# Published reports live under reports/ and remain tracked.
 /data/
-/*/data/
 /datasets/
-/*/datasets/
 /input/
-/*/input/
 /output/
-/*/output/
 /working/
-/*/working/
 /models/
-/*/models/
 /checkpoints/
-/*/checkpoints/
 /submissions/
-/*/submissions/
 /logs/
-/*/logs/
 /runs/
-/*/runs/
 /tmp/
-/*/tmp/
 /temp/
-/*/temp/
-
-# Local operating system files
-.DS_Store
-Thumbs.db
-Desktop.ini
 
 # Competition-local data and execution artifacts in the source tree.
 /competitions/*/data/

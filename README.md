@@ -4,13 +4,13 @@ Kaggle notebooks and HTML execution reports, organized by competition and versio
 
 ## Workflow
 
-1. Develop notebooks locally and manage versions with Git.
-2. Connect the local notebook environment to a Kaggle Jupyter kernel and execute with Kaggle server resources.
-3. Export execution results to HTML with cell outputs included.
-4. Track HTML reports with Git and publish them through GitHub Pages.
+1. Develop notebooks in VS Code using a local Dev Container with the Mac's project directory mounted.
+2. Connect VS Code to a Kaggle remote Jupyter kernel and execute with Kaggle server resources.
+3. Export execution results to HTML with cell outputs included using tools in the Dev Container.
+4. Commit notebook source and HTML reports from the Mac, push to GitHub, and publish reports through GitHub Pages.
 5. Submit competition entries on Kaggle.
 
-Notebook source files contain code and Markdown. Execution results are preserved in HTML reports. Git operations are managed locally.
+Git tracks notebook code and Markdown with cell outputs and execution counts stripped. Execution results are preserved in HTML reports. Git operations and GitHub authentication are managed on the Mac.
 
 ## Organization
 

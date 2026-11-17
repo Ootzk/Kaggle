@@ -6,12 +6,12 @@ A small PyTorch CNN trained for five epochs on a stratified 80/20 split with see
 
 - [Competition](https://www.kaggle.com/competitions/digit-recognizer)
 - [Data description](https://www.kaggle.com/competitions/digit-recognizer/data)
-- [Published baseline report](https://ootzk.github.io/Kaggle/digit-recognizer/experiments-baseline.html)
+- [Published baseline report](https://ootzk.github.io/Kaggle/digit-recognizer/experiment-cnn-baseline.html)
 - [Private Kaggle notebook](https://www.kaggle.com/code/pocariblitz/digit-recognizer-gpu-baseline)
 
 ## Local execution
 
-1. Open `experiments-baseline.ipynb` in the Kaggle GPU Dev Container and select `/usr/bin/python3`.
+1. Open `experiment-cnn-baseline.ipynb` in the Kaggle GPU Dev Container and select `/usr/bin/python3`.
 2. Configure `KAGGLE_API_TOKEN` in the repository-root `.env` using `.env.example`. Accept the competition rules if required.
 3. Run the environment cell and confirm CUDA computation succeeds.
 4. Run the remaining cells. Existing `data/train.csv` and `data/test.csv` are reused. Missing data is downloaded with `kagglehub.competition_download`; the returned directory is used to read the CSVs.
@@ -25,7 +25,7 @@ Local `data/` and `output/` are ignored directories in the bind-mounted reposito
 
 For interactive execution, start a Kaggle GPU Jupyter session, connect VS Code using its compatible server URL, and select the remote Python kernel for the local notebook. Run the environment cell before training. KaggleHub resolves the remote data path; it may ignore `output_dir`. Results stay on the server, normally under `/kaggle/working/digit-recognizer/output/`.
 
-For batch execution, `kernel-metadata.json` targets `pocariblitz/digit-recognizer-gpu-baseline` with GPU, internet access, Digit Recognizer competition data, and `is_private: true`. Package the intended output-stripped notebook source and metadata before `kaggle kernels push`. Exclude `.env` and local files from that package. The API or CLI may push notebooks, inspect status, retrieve run outputs, and submit predictions; input downloads always use KaggleHub.
+For batch execution, `experiment-cnn-baseline.kaggle.json` targets `pocariblitz/digit-recognizer-gpu-baseline` with GPU, internet access, Digit Recognizer competition data, and `is_private: true`. Copy that configuration to `kernel-metadata.json` beside the intended output-stripped notebook source before `kaggle kernels push`. Exclude `.env` and local files from that package. The API or CLI may push notebooks, inspect status, retrieve run outputs, and submit predictions; input downloads always use KaggleHub.
 
 A notebook push creates and runs a version; it does not submit predictions to the competition. Never commit connection URLs or tokens. Record and inspect local and remote environments independently; GPU results can differ.
 
@@ -49,7 +49,7 @@ Generated files include `submission.csv`, `training_history.csv`, and `validatio
 Save outputs, then run from the repository root:
 
 ```bash
-/usr/bin/python3 scripts/export_report.py competitions/digit-recognizer/experiments-baseline.ipynb
+/usr/bin/python3 scripts/export_report.py competitions/digit-recognizer/experiment-cnn-baseline.ipynb
 ```
 
 The report and manifest go to `reports/digit-recognizer/`. Export does not execute cells. Follow [report publishing](../../docs/report-publishing.md) for preview, Git LFS, and `main`-only Pages deployment.

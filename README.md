@@ -23,16 +23,16 @@ See [Ubuntu setup](docs/ubuntu-setup.md) for container startup, GPU validation, 
 
 ```text
 competitions/<competition-slug>/
-  baseline.ipynb          # regular Git; committed without outputs
-  kernel-metadata.json   # Kaggle execution settings, when needed
+  experiment-cnn-baseline.ipynb        # regular Git; committed without outputs
+  experiment-cnn-baseline.kaggle.json  # per-notebook Kaggle settings
   data/                  # ignored local data
   output/                # ignored generated artifacts
 reports/<competition-slug>/
-  baseline.html          # Git LFS; includes execution outputs
-  baseline.json          # regular Git; source/report identity
+  experiment-cnn-baseline.html         # Git LFS; includes execution outputs
+  experiment-cnn-baseline.json         # regular Git; source/report identity
 ```
 
-Competition directory names follow their Kaggle URL slugs. Working notebooks retain outputs; the Git clean filter strips outputs and execution counts from the index. HTML preserves code, Markdown, tables, plots, and logs. After cloning, use `git lfs pull` if reports appear as pointer files.
+See [notebook naming](docs/notebook-naming.md) for source, report, and Kaggle configuration conventions. Competition directory names follow their Kaggle URL slugs. Working notebooks retain outputs; the Git clean filter strips outputs and execution counts from the index. HTML preserves code, Markdown, tables, plots, and logs. After cloning, use `git lfs pull` if reports appear as pointer files.
 
 ## Workflow
 

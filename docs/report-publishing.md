@@ -5,13 +5,13 @@
 ```text
 competitions/
   digit-recognizer/
-    experiments-baseline.ipynb
-    data/                  # ignored local competition data
-    output/                # ignored generated files
+    experiment-cnn-baseline.ipynb
+    data/                              # ignored local competition data
+    output/                            # ignored generated files
 reports/
   digit-recognizer/
-    experiments-baseline.html          # tracked, includes local execution outputs
-    experiments-baseline.json          # tracked source/report identity
+    experiment-cnn-baseline.html          # tracked, includes local execution outputs
+    experiment-cnn-baseline.json          # tracked source/report identity
 ```
 
 HTML under `reports/` is tracked with Git LFS; the small JSON manifests remain regular Git files. The Dev Container installs checksum-verified Git LFS at the version declared in its Dockerfile and registers repository-local LFS filters and the pre-push hook on startup.
@@ -23,7 +23,7 @@ The notebook is the source of truth. Keep execution outputs in the working noteb
 Save the executed notebook, then run from the repository root:
 
 ```bash
-/usr/bin/python3 scripts/export_report.py competitions/digit-recognizer/experiments-baseline.ipynb
+/usr/bin/python3 scripts/export_report.py competitions/digit-recognizer/experiment-cnn-baseline.ipynb
 ```
 
 The command uses the Kaggle image's Python and existing packages. It does not run cells. It rejects unexecuted nonempty code cells and saved execution errors. It embeds images and the Plotly JavaScript runtime, replacing notebook-specific RequireJS wrappers so figures work in a standalone browser without a CDN. Chart hover and legends remain interactive.
@@ -46,8 +46,8 @@ After a clone or when a report appears as a short LFS pointer, run `git lfs pull
 ## Stage and commit
 
 ```bash
-git add competitions/digit-recognizer/experiments-baseline.ipynb reports/digit-recognizer/
-git show :competitions/digit-recognizer/experiments-baseline.ipynb
+git add competitions/digit-recognizer/experiment-cnn-baseline.ipynb reports/digit-recognizer/
+git show :competitions/digit-recognizer/experiment-cnn-baseline.ipynb
 git diff --cached --check
 ```
 
@@ -68,7 +68,7 @@ Only report HTML and the index are published; source files, JSON manifests, data
 Public URLs:
 
 - [Report index](https://ootzk.github.io/Kaggle/)
-- [Digit Recognizer — Baseline](https://ootzk.github.io/Kaggle/digit-recognizer/experiments-baseline.html)
+- [Digit Recognizer — Baseline](https://ootzk.github.io/Kaggle/digit-recognizer/experiment-cnn-baseline.html)
 
 Git preserves older HTML versions; the site shows the latest successful deployment.
 

@@ -1,7 +1,7 @@
 {
-  "notebook": "competitions/Kannada-MNIST/experiment-mixed.ipynb",
+  "notebook": "competitions/Kannada-MNIST/experiment-cnn-mixed.ipynb",
   "title": "Kannada-MNIST",
-  "label": "Experiment-Mixed",
+  "label": "Experiment-Cnn-Mixed",
   "source_sha256": "17a217c4bf0253733a0ed31b29ddd564ab92945115070bbc099c9b35b29d04f5",
   "html_sha256": "5a4ccc5098759deff632124be7ac78d40698b529ee590972f16dc2588bde3ab9"
 }

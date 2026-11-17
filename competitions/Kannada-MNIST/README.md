@@ -80,3 +80,5 @@ For an interactive session, select the remote Kaggle Jupyter kernel and check th
 - Reports will be stored under `reports/Kannada-MNIST/`. No report is published until an executed export and its manifest exist and are merged into `main`.
 
 See [data access](../../docs/data-access.md) and [report publishing](../../docs/report-publishing.md) for the shared workflow.
+
+For code-competition submission, the notebook writes `/kaggle/working/submission.csv` at the Kaggle output root. Select `submission.csv` from the completed notebook version when submitting. Locally, predictions remain in `output/baseline/submission.csv`; auxiliary metrics and weights stay in the baseline artifact directory.

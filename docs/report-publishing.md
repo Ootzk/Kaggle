@@ -51,7 +51,7 @@ Verify each indexed code cell has empty `outputs` and a null `execution_count`. 
 
 ## Deployment
 
-The Pages workflow is `.github/workflows/pages.yml`. It currently accepts pushes to `setup/dev-container-workflow` and `main`, plus manual dispatch. The setup branch supports the initial deployment; once work is merged, remove that branch from the trigger and publish from `main` only. Do not use both branches for independent report releases.
+The Pages workflow is `.github/workflows/pages.yml`. Only pushes to `main` that touch reports, notebook sources, report build scripts, attributes, or the workflow trigger automatic deployment. Manual dispatch is also supported, but a job condition permits it only for `refs/heads/main`. The `github-pages` environment independently permits deployments from `main` only. Work on feature branches is published after it is merged into `main`; a feature-branch push or pull request does not deploy. Documentation-only changes do not automatically deploy.
 
 GitHub Pages must use **GitHub Actions** as its publishing source. The `github-pages` environment must permit the deployment branch. The workflow:
 

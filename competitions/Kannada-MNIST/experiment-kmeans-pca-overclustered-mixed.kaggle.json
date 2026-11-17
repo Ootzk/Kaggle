@@ -1,0 +1,15 @@
+{
+  "id": "pocariblitz/kannada-mnist-kmeans-pca-mixed",
+  "title": "Kannada MNIST KMeans PCA Mixed",
+  "code_file": "experiment-kmeans-pca-overclustered-mixed.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": true,
+  "enable_gpu": false,
+  "enable_internet": false,
+  "dataset_sources": [],
+  "competition_sources": [
+    "Kannada-MNIST"
+  ],
+  "kernel_sources": []
+}

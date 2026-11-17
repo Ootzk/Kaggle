@@ -66,6 +66,27 @@ Confirm that code and Markdown remain, code-cell outputs are empty, and executio
 
 Host-side validation uses temporary repositories to check real staging, working-output preservation, fresh-clone registration, and failure handling. Detailed fixture results remain local rather than adding custom filter scripts to the repository.
 
+## Notebook diff and merge
+
+`nbdime` is a locked host development dependency. Keep `nbstripout` as the clean filter and use `nbdime` for structured notebook diffs and merges. Register it locally after each clone:
+
+```powershell
+uv run --locked nbdime config-git --enable
+git config --local diff.jupyternotebook.command '".venv/Scripts/git-nbdiffdriver.exe" diff'
+git config --local merge.jupyternotebook.driver '".venv/Scripts/git-nbmergedriver.exe" merge %O %A %B %L %P'
+```
+
+The explicit paths let regular Windows `git diff` and `git merge` find the project tools without activating `.venv`. `.gitattributes` selects `diff=jupyternotebook` and `merge=jupyternotebook`; these replace the simpler `nbstripout` diff view while preserving its output-stripping filter.
+
+For a browser-based diff or interactive merge resolution, run from the repository root:
+
+```powershell
+uv run --locked nbdiff-web HEAD -- competition-slug/notebook.ipynb
+uv run --locked git mergetool --tool nbdime -- '*.ipynb'
+```
+
+These commands expose the project executables through `uv run`. Review unresolved code conflicts manually and verify the resulting notebook before staging it. Browser-based tools require an interactive user session.
+
 ## Kaggle image and VS Code
 
 The configuration pins the official GPU image `v172`:
@@ -137,5 +158,6 @@ Keep machine-specific hardware details, resource allocations, installed host-too
 - [Docker Desktop GPU support](https://docs.docker.com/desktop/features/gpu/)
 - [VS Code Dev Containers](https://code.visualstudio.com/docs/devcontainers/containers)
 - [nbstripout Git filter](https://github.com/kynan/nbstripout#using-as-a-git-filter)
+- [nbdime Git integration](https://nbdime.readthedocs.io/en/latest/vcs.html)
 - [uv project dependencies](https://docs.astral.sh/uv/concepts/projects/dependencies/)
 - [uv locking and syncing](https://docs.astral.sh/uv/concepts/projects/sync/)

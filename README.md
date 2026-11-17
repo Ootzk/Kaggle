@@ -32,10 +32,15 @@ Use Windows Git for this checkout. Install `uv` on Windows, then run the followi
 uv sync --locked
 uv run --locked nbstripout --install --attributes .gitattributes
 uv run --locked nbstripout --is-installed
+uv run --locked nbdime config-git --enable
+git config --local diff.jupyternotebook.command '".venv/Scripts/git-nbdiffdriver.exe" diff'
+git config --local merge.jupyternotebook.driver '".venv/Scripts/git-nbmergedriver.exe" merge %O %A %B %L %P'
 ```
 
 [`pyproject.toml`](pyproject.toml) declares host development tools, and [`uv.lock`](uv.lock) locks their dependency versions. `uv sync --locked` installs them into the ignored Windows `.venv`. The Git filter preserves working notebook outputs while stripping results from staged notebooks. Register the filter after each clone or repository move. Keep this environment for Windows Git; use the Kaggle image's Python for notebooks and HTML export. Check staged notebook contents with `git show :competition-slug/notebook.ipynb` before committing.
 
 See [notebook Git setup](docs/windows-setup.md#notebook-git-filter) for details. HTML export and GitHub Pages deployment are pending. Remote Kaggle connection verification remains deferred.
+
+`nbstripout` removes execution results when staging; `nbdime` provides notebook-aware Git diffs and merges. The explicit Windows driver paths let regular `git diff` and `git merge` use the project environment without activation. See [notebook diff and merge](docs/windows-setup.md#notebook-diff-and-merge) for visual review commands.
 
 See [AGENTS.md](AGENTS.md) for development guidelines, handoff details, and the setup sequence.

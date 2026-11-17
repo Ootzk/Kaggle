@@ -27,6 +27,8 @@ def main():
         relative = report.relative_to(ROOT / "reports")
         if report.is_symlink() or report.parent.is_symlink():
             raise ValueError("Report symlinks are not allowed")
+        if report.read_bytes().startswith(b"version https://git-lfs.github.com/spec/v1"):
+            raise ValueError(f"Report is an LFS pointer; run git lfs pull: {report}")
         manifest = json.loads(report.with_suffix(".json").read_text())
         expected = f"competitions/{relative.parent}/{report.stem}.ipynb"
         if manifest["notebook"] != expected:

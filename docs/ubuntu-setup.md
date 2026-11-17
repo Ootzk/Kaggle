@@ -43,7 +43,9 @@ Use VS Code Source Control and the integrated terminal in the Dev Container for 
 
 The Dockerfile installs `nbstripout` and `nbdime` at explicit versions into `/opt/kaggle-git-tools`, using the `uv` supplied by the official image. It also installs `wrapt` there for the base interpreter's Kaggle startup hook. This environment excludes system site packages and is not added to `PATH`, so notebook execution continues to use `/usr/bin/python3` and the supplied scientific packages. The host `.venv`, `pyproject.toml`, and `uv.lock` are not part of this workflow. Update Git tool versions in the Dockerfile and rebuild through Dev Containers.
 
-On every container start, `postStartCommand` runs `.devcontainer/configure-git.sh`. It registers the clean filter, notebook diff/merge drivers, and optional web tools using the repository-relative `.devcontainer/git-tools.sh` dispatcher. The same setup applies after a fresh clone, container recreation, or restart. It leaves authentication settings in the shared `.git/config` untouched. Notebook Git operations require the container; missing tools make the required clean filter fail rather than stage outputs.
+The Dockerfile also installs a pinned, checksum-verified standalone Git LFS binary in `/opt/kaggle-git-tools/bin`, exposed through `/usr/local/bin/git-lfs`, without changing scientific Python. HTML reports use LFS; manifests remain regular Git files.
+
+On every container start, `postStartCommand` runs `.devcontainer/configure-git.sh`. It installs repository-local LFS filters and the pre-push hook. It registers the clean filter, notebook diff/merge drivers, and optional web tools using the repository-relative `.devcontainer/git-tools.sh` dispatcher. The same setup applies after a fresh clone, container recreation, or restart. It leaves authentication settings in the shared `.git/config` untouched. Notebook Git operations require the container; missing tools make the required clean filter fail rather than stage outputs.
 
 To reapply or validate the setup manually, run inside the container:
 

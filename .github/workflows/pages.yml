@@ -5,6 +5,7 @@ on:
     branches: [main, setup/dev-container-workflow]
     paths:
       - 'reports/**'
+      - '.gitattributes'
       - 'competitions/**/*.ipynb'
       - 'scripts/report_common.py'
       - 'scripts/build_pages.py'
@@ -23,6 +24,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - run: git lfs pull --include="reports/**" --exclude=""
       - run: python3 scripts/build_pages.py --output "$RUNNER_TEMP/pages"
       - uses: actions/upload-pages-artifact@v3
         with:

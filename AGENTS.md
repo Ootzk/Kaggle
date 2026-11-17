@@ -17,6 +17,7 @@ This repository tracks Kaggle notebook source and HTML execution reports with Gi
 - Define the VS Code container configuration in `.devcontainer/` and track it with Git.
 - Mount the local repository into the container so edits persist on the development machine.
 - Configure the Python and Jupyter extensions for the container environment.
+- Install the checksum-verified Git LFS binary at the explicit Dockerfile version into `/opt/kaggle-git-tools/bin`, expose it to Git through `/usr/local/bin/git-lfs`, and register LFS locally during container startup. Do not rewrite published history when converting reports.
 - Run notebook development tools and HTML export inside the container. Manage notebook Git tools as explicitly versioned installations in `.devcontainer/Dockerfile`, inside `/opt/kaggle-git-tools`. Keep this environment separate from the supplied scientific Python and leave the notebook interpreter at `/usr/bin/python3`. Do not require host Python development tools.
 - Run Docker Engine directly on Ubuntu. Verify the NVIDIA driver and NVIDIA Container Toolkit runtime before relying on `--gpus all`. Use the current stable Docker Engine from its official Ubuntu repository.
 - Validate container startup, Python imports, and local GPU access on the Ubuntu machine. Use a non-root container user matching the host UID/GID so bind-mounted files retain host ownership.
@@ -50,7 +51,7 @@ Account for data paths, attached datasets, required packages, and accelerator se
 ## HTML Reports
 
 - Include relevant tables, plots, text output, and training logs in HTML reports.
-- Track HTML reports with Git and publish them through GitHub Pages.
+- Track `reports/**/*.html` with Git LFS and publish them through GitHub Pages Actions. Keep report JSON manifests in regular Git. The workflow must download LFS content before building its artifact; unresolved LFS pointers are an error.
 - Export HTML from the working notebook with outputs available.
 - Verify that referenced images and files remain accessible after publishing.
 - Verify that each updated report corresponds to the accompanying notebook source. Export writes a sibling JSON manifest with source and HTML hashes; Pages build rejects stale pairs.

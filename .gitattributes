@@ -9,3 +9,6 @@
 *.ipynb filter=nbstripout
 *.zpln filter=nbstripout
 *.ipynb diff=jupyternotebook merge=jupyternotebook
+
+# Keep generated report HTML in LFS; JSON source manifests remain regular Git files.
+reports/**/*.html filter=lfs diff=lfs merge=lfs -text

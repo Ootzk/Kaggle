@@ -14,6 +14,8 @@ reports/
     baseline.json          # tracked source/report identity
 ```
 
+HTML under `reports/` is tracked with Git LFS; the small JSON manifests remain regular Git files. The Dev Container installs checksum-verified Git LFS at the version declared in its Dockerfile and registers repository-local LFS filters and the pre-push hook on startup.
+
 The notebook is the source of truth. Keep execution outputs in the working notebook; the container's Git filter strips committed notebooks. HTML preserves code, Markdown, tables, logs, and interactive Plotly figures.
 
 ## Export in the Dev Container
@@ -35,7 +37,7 @@ The adjacent JSON manifest records a digest of cell types and source, plus the H
 /usr/bin/python3 -m http.server 8000 --directory tmp/pages-preview
 ```
 
-Use a fresh/empty output directory. Open the forwarded server in a browser. Check the index link, all plots, legend toggles, training logs, metrics, and error-gallery captions. Reports are standalone HTML; no external images or script downloads are needed. Review code and output for credentials and any information unsuitable for publication.
+After a clone or when a report appears as a short LFS pointer, run `git lfs pull`. Use a fresh/empty output directory. Open the forwarded server in a browser. Check the index link, all plots, legend toggles, training logs, metrics, and error-gallery captions. Reports are standalone HTML; no external images or script downloads are needed. Review code and output for credentials and any information unsuitable for publication.
 
 ## Stage and commit
 
@@ -54,7 +56,7 @@ The Pages workflow is `.github/workflows/pages.yml`. It currently accepts pushes
 GitHub Pages must use **GitHub Actions** as its publishing source. The `github-pages` environment must permit the deployment branch. The workflow:
 
 1. Checks source/report digests with standard-library Python. It never trains or exports notebooks.
-2. Copies only `reports/<competition>/*.html` and generates an index with relative links.
+2. Downloads actual HTML with LFS-aware checkout (`lfs: true`) and an explicit `git lfs pull`, then copies only `reports/<competition>/*.html` and generates an index with relative links. The build rejects unresolved LFS pointers.
 3. Uploads that directory as the Pages artifact and deploys it with `pages: write` and `id-token: write` permissions.
 
 Only report HTML and the index are published; source files, JSON manifests, data directories, and credentials are excluded from the site artifact.
@@ -71,3 +73,16 @@ Git preserves older HTML versions; the site shows the latest successful deployme
 The initial deployment from commit `95ad742` completed successfully in [GitHub Actions](https://github.com/Ootzk/Kaggle/actions/runs/44075475308). Both public URLs returned HTTP 200, and the served report matched the committed HTML byte-for-byte. Browser verification passed for all eight Plotly charts, grouped digit legend toggles, and the ten error-gallery captions, with no external resource requests or JavaScript errors. Local diagnostics and screenshots remain untracked under `.git/kaggle-devcontainer/`.
 
 The moved competition directory passed notebook Git staging/output-preservation and diff/merge verification. Local CSVs and outputs remain ignored and preserved under `competitions/digit-recognizer/`.
+
+## Git LFS report storage
+
+```bash
+git lfs version
+git lfs pull
+git lfs ls-files
+git lfs fsck
+```
+
+Stage an updated report with normal `git add`; LFS stores the HTML separately and commits a small pointer. The pre-push hook uploads its LFS object. Working files and the Pages artifact contain the full HTML. The Pages workflow hydrates LFS before assembling its artifact; it does not ask the branch-based Pages publisher to serve LFS pointers.
+
+This conversion does not rewrite history. HTML in older commits remains an ordinary Git blob; only this and later report revisions use LFS. Rebuild the Dev Container to adopt its declared Git LFS installation when recreating the environment.

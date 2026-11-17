@@ -1,7 +1,7 @@
 {
   "id": "pocariblitz/kannada-mnist-mixed",
   "title": "Kannada MNIST Mixed",
-  "code_file": "mixed.ipynb",
+  "code_file": "experiment-mixed.ipynb",
   "language": "python",
   "kernel_type": "notebook",
   "is_private": true,

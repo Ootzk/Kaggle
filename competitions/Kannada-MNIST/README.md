@@ -34,7 +34,7 @@ This historical competition ended in 2019 and uses **code submissions** evaluate
 
 ## CNN baseline and fixed split
 
-`baseline.ipynb` trains the Digit Recognizer CNN architecture for ten fixed epochs with Adam (learning rate 0.001) and batch size 256. Only the training partition of `train.csv` is used for fitting; Only the held-out 20% Dig-MNIST subset is evaluated after the final epoch. Baseline never uses Dig-MNIST for optimization or checkpoint selection.
+`experiment-baseline.ipynb` trains the Digit Recognizer CNN architecture for ten fixed epochs with Adam (learning rate 0.001) and batch size 256. Only the training partition of `train.csv` is used for fitting; only the held-out 20% Dig-MNIST subset is evaluated after the final epoch. Baseline never uses Dig-MNIST for optimization or checkpoint selection.
 
 TRAIN is stored in one PyTorch `TensorDataset`. Scikit-learn creates stratified row indices, `Subset` selects the training and validation rows without copying the image arrays, and `DataLoader` forms batches. Only the training loader shuffles; validation and inference retain row order. Dig-MNIST and test inference also use tensor datasets and loaders.
 
@@ -68,13 +68,13 @@ dig_train_indices, dig_valid_indices = train_test_split(
 )
 ```
 
-No external split configuration file is needed locally or remotely. Both notebooks save TRAIN and Dig-MNIST CSV hashes, the scikit-learn version, and both complete split row lists in `output/baseline/split_manifest.json`. Reuse these recorded positions if reproducing the partition under a different library version; verify the input file hash first. Fixing the split does not guarantee bit-identical GPU training results.
+No external split configuration file is needed locally or remotely. Both notebooks save TRAIN and Dig-MNIST CSV hashes, the scikit-learn version, and both complete split row lists in their respective `output/baseline/split_manifest.json` and `output/mixed/split_manifest.json` files. Reuse these recorded positions if reproducing the partition under a different library version; verify the input file hash first. Fixing the split does not guarantee bit-identical GPU training results.
 
 Outputs under `output/baseline/` include final weights, learning curves in the working notebook, training/per-digit metric CSVs, separate validation and Dig-MNIST summaries, confident-error tables, and `submission.csv`. Test IDs come from the supplied `id,label` template; no test accuracy is computed without ground truth. No upload or submission is performed automatically.
 
 ## Mixed-data experiment
 
-`mixed.ipynb` uses the same CNN, optimizer, learning rate, batch size, model seed, ten epochs, and both split definitions as baseline. PyTorch `ConcatDataset` combines the 48,000-row TRAIN learning subset with the 8,192-row Dig learning subset. Training contains 56,192 examples; the 12,000 TRAIN validation and 2,048 Dig validation images remain held out.
+`experiment-mixed.ipynb` uses the same CNN, optimizer, learning rate, batch size, model seed, ten epochs, and both split definitions as baseline. PyTorch `ConcatDataset` combines the 48,000-row TRAIN learning subset with the 8,192-row Dig learning subset. Training contains 56,192 examples; the 12,000 TRAIN validation and 2,048 Dig validation images remain held out.
 
 Compare both models using the exact same validation rows from each source. Dig-MNIST validation is now a held-out metric for mixed too. Once repeatedly used for model development, these are validation scores, not an untouched final test. The 2,048-row Dig holdout is suitable for an initial comparison; small score differences warrant further confirmation.
 
@@ -93,7 +93,7 @@ Both runs use ten epochs and the same held-out row positions. Earlier experiment
 
 `kernel-metadata.json` configures the private GPU baseline notebook at `pocariblitz/kannada-mnist-baseline`, with the competition data attached. Internet is disabled because the competition forbids it. The competition data is attached through the notebook metadata; KaggleHub resolves that data in the Kaggle environment. Local missing-input downloads still use KaggleHub with local authentication. Notebook push runs the baseline but does not submit predictions to the competition.
 
-`mixed-kernel-metadata.json` provides the matching private GPU, internet-disabled configuration for `pocariblitz/kannada-mnist-mixed`. Package it as `kernel-metadata.json` beside the committed `mixed.ipynb` when pushing mixed; keep the baseline metadata and source in a separate package. Both notebooks attach `Kannada-MNIST` and produce a root-level `submission.csv` on Kaggle.
+`mixed-kernel-metadata.json` provides the matching private GPU, internet-disabled configuration for `pocariblitz/kannada-mnist-mixed`. Package it as `kernel-metadata.json` beside the committed `experiment-mixed.ipynb` when pushing mixed; keep the baseline metadata and source in a separate package. Both notebooks attach `Kannada-MNIST` and produce a root-level `submission.csv` on Kaggle.
 
 For an interactive session, select the remote Kaggle Jupyter kernel and check the environment before running. KaggleHub may ignore `output_dir` on Kaggle; use its returned path. Generated files belong under a writable `/kaggle/working` directory remotely.
 
@@ -107,3 +107,13 @@ For an interactive session, select the remote Kaggle Jupyter kernel and check th
 See [data access](../../docs/data-access.md) and [report publishing](../../docs/report-publishing.md) for the shared workflow.
 
 For code-competition submission, the notebook writes `/kaggle/working/submission.csv` at the Kaggle output root. Select `submission.csv` from the completed notebook version when submitting. Locally, predictions remain in `output/baseline/submission.csv`; auxiliary metrics and weights stay in the baseline artifact directory.
+
+## Final fit and consolidated report
+
+`submission.ipynb` initializes the same CNN from scratch and trains for ten epochs on all 60,000 TRAIN plus all 10,240 Dig-MNIST rows. There is no validation split, early stopping, or checkpoint selection. Training curves are optimization diagnostics, not held-out performance. Outputs go to `output/submission/` locally, including `model.pt`, `training_history.csv`, `training_manifest.json`, and `submission.csv`. Kaggle writes the CSV at `/kaggle/working/submission.csv`.
+
+`submission-kernel-metadata.json` defines a separate private GPU notebook with internet disabled. Package it as `kernel-metadata.json` with `submission.ipynb` only when intentionally starting a remote run. Creating this notebook does not push, run, or submit it on Kaggle.
+
+`report.ipynb` describes all three methods and embeds one completed local run per experiment and the verified baseline v3, Mixed v1, and full-data v1 competition scores. Its tables and Plotly charts render without local training artifacts or authentication. Experimental validation uses local results only; Kaggle run validation results are excluded. The shared CNN is defined in code and summarized with the image-supplied `torchinfo`, including layer shapes and parameter counts; no additional visualization package is required. Queued/canceled runs are excluded. Mixed v1 scored public 0.96800 / private 0.96780; full-data v1 scored public 0.96120 / private 0.96420. The full-data fit did not improve on Mixed in this run; its training accuracy is not a validation metric. Update the report snapshot and provenance together when adding completed results.
+
+Experimental artifact directory names remain `output/baseline/` and `output/mixed/`; renaming the source notebooks does not rename or discard existing execution results. Existing Kaggle notebook slugs remain unchanged as well.

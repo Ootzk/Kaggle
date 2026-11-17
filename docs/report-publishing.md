@@ -28,7 +28,11 @@ Save the executed notebook, then run from the repository root:
 
 The command uses the Kaggle image's Python and existing packages. It does not run cells. It rejects unexecuted nonempty code cells and saved execution errors. It embeds images and the Plotly JavaScript runtime, replacing notebook-specific RequireJS wrappers so figures work in a standalone browser without a CDN. Chart hover and legends remain interactive.
 
-The adjacent JSON manifest records a digest of cell types and source, plus the HTML digest. It intentionally excludes outputs, execution counts, and transient notebook metadata. This lets a Pages build validate a report against the stripped notebook committed to Git. Hashes detect edits after export; they do not prove that saved outputs were produced by the current code. Rerun computational changes before exporting. Markdown-only edits can be exported without retraining.
+Exported HTML includes a **Show code** checkbox at the top, enabled by default. Turn it off to hide code inputs and cells without outputs while preserving Markdown, tables, logs, and charts. It works offline and does not modify the notebook or rerun any code. The control itself is omitted when printing.
+
+To hide an individual code cell's source in exported HTML while keeping its output, add `hide_input` to the cell's `metadata.tags`. The notebook retains its code and outputs; other code cells remain visible in HTML. For example, a model-summary cell can display only its generated table. This is an export setting, not a Git output-retention tag.
+
+The adjacent JSON manifest records a digest of cell types, source, and the export-relevant `hide_input` tag, plus the HTML digest. It intentionally excludes outputs, execution counts, and transient notebook metadata. Untagged notebooks retain their existing digests. This lets a Pages build validate a report against the stripped notebook committed to Git. Hashes detect edits after export; they do not prove that saved outputs were produced by the current code. Rerun computational changes before exporting. Markdown-only and `hide_input` tag edits can be exported without retraining.
 
 ## Preview and verify
 

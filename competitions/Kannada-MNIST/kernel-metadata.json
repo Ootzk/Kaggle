@@ -1,7 +1,7 @@
 {
   "id": "pocariblitz/kannada-mnist-baseline",
   "title": "Kannada MNIST Baseline",
-  "code_file": "baseline.ipynb",
+  "code_file": "experiment-baseline.ipynb",
   "language": "python",
   "kernel_type": "notebook",
   "is_private": true,

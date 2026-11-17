@@ -8,11 +8,60 @@ import re
 import nbformat
 from bs4 import BeautifulSoup
 from nbconvert import HTMLExporter
+from nbconvert.preprocessors import TagRemovePreprocessor
 from plotly.offline import get_plotlyjs
 
 from report_common import source_digest
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def add_code_toggle(soup):
+    style = soup.new_tag("style", id="report-code-toggle-style")
+    style.string = """
+        #report-controls {
+            position: sticky;
+            top: 8px;
+            z-index: 1000;
+            margin-bottom: 24px;
+            padding: 10px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: var(--jp-layout-color0, white);
+            font: 14px system-ui, sans-serif;
+        }
+        #report-controls label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+        .report-hide-code .jp-CodeCell .jp-InputArea,
+        .report-hide-code .jp-CodeCell.jp-mod-noOutputs {
+            display: none !important;
+        }
+        @media print {
+            #report-controls { display: none; }
+        }
+    """
+    soup.head.append(style)
+    controls = soup.new_tag("div", id="report-controls")
+    label = soup.new_tag("label", attrs={"for": "report-show-code"})
+    checkbox = soup.new_tag(
+        "input", id="report-show-code", attrs={"type": "checkbox", "checked": ""}
+    )
+    label.append(checkbox)
+    label.append("Show code")
+    controls.append(label)
+    soup.body.insert(0, controls)
+    script = soup.new_tag("script", id="report-code-toggle-script")
+    script.string = """
+        document.getElementById('report-show-code').addEventListener('change', (event) => {
+            document.body.classList.toggle('report-hide-code', !event.target.checked);
+            window.dispatchEvent(new Event('resize'));
+        });
+    """
+    soup.body.append(script)
 
 
 def main():
@@ -51,6 +100,9 @@ def main():
                     script.string = value
             data["text/html"] = str(soup)
     exporter = HTMLExporter(template_name="lab", embed_images=True)
+    exporter.register_preprocessor(
+        TagRemovePreprocessor(remove_input_tags={"hide_input"}), enabled=True
+    )
     body, resources = exporter.from_notebook_node(notebook)
     if resources.get("outputs"):
         raise ValueError("Unexpected external export resources")
@@ -61,6 +113,7 @@ def main():
     plotly_script = soup.new_tag("script")
     plotly_script.string = get_plotlyjs()
     soup.head.append(plotly_script)
+    add_code_toggle(soup)
     body = "\n".join(line.rstrip() for line in str(soup).splitlines()) + "\n"
     if 'require(["plotly"]' in body:
         raise ValueError("Unconverted Plotly output")

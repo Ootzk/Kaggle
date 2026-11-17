@@ -26,6 +26,16 @@ The Windows Dev Container configuration is in [`.devcontainer/devcontainer.json`
 
 Follow [Windows setup and validation](docs/windows-setup.md) before opening the container. Container execution validation is tracked there separately from configuration checks.
 
-Notebook output filtering, HTML export, and GitHub Pages deployment are pending. Use Windows Git for this checkout. Remote Kaggle connection verification remains deferred.
+Use Windows Git for this checkout. Install `uv` on Windows, then run the following from a host PowerShell terminal at the repository root:
+
+```powershell
+uv sync --locked
+uv run --locked nbstripout --install --attributes .gitattributes
+uv run --locked nbstripout --is-installed
+```
+
+[`pyproject.toml`](pyproject.toml) declares host development tools, and [`uv.lock`](uv.lock) locks their dependency versions. `uv sync --locked` installs them into the ignored Windows `.venv`. The Git filter preserves working notebook outputs while stripping results from staged notebooks. Register the filter after each clone or repository move. Keep this environment for Windows Git; use the Kaggle image's Python for notebooks and HTML export. Check staged notebook contents with `git show :competition-slug/notebook.ipynb` before committing.
+
+See [notebook Git setup](docs/windows-setup.md#notebook-git-filter) for details. HTML export and GitHub Pages deployment are pending. Remote Kaggle connection verification remains deferred.
 
 See [AGENTS.md](AGENTS.md) for development guidelines, handoff details, and the setup sequence.

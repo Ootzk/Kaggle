@@ -17,7 +17,7 @@ This repository tracks Kaggle notebook source and HTML execution reports with Gi
 - Define the VS Code container configuration in `.devcontainer/` and track it with Git.
 - Mount the local repository into the container so edits persist on the development machine.
 - Configure the Python and Jupyter extensions for the container environment.
-- Run development tools and HTML export inside the container.
+- Run notebook development tools and HTML export inside the container. Manage host Git tools explicitly in `pyproject.toml` and `uv.lock`, and run them from the Windows `.venv` created by `uv sync --locked`.
 - On Windows, verify Docker GPU access through the WSL2 backend and the NVIDIA driver before relying on local GPU execution.
 - Validate container startup, Python imports, and local GPU access on the Windows machine.
 - Select the remote Kaggle Jupyter kernel when executing with Kaggle server resources. Confirm the selected kernel before running a notebook.
@@ -61,19 +61,21 @@ Account for data paths, attached datasets, required packages, and accelerator se
 - The initial workflow documentation and the Dev Container decision have been committed.
 - Remote Kaggle connection verification was explicitly deferred by the user.
 - Use Windows Git for this checkout.
-- `.gitignore` excludes local environments, caches, credentials, and designated data/artifact directories at the root and directly inside each competition. Keep HTML reports and resources outside those directories. `.gitattributes` uses LF for text and CRLF for Windows command scripts; notebook output filtering is still pending.
+- `.gitignore` excludes local environments, caches, credentials, and designated data/artifact directories at the root and directly inside each competition. Keep HTML reports and resources outside those directories. `.gitattributes` uses LF for text and CRLF for Windows command scripts.
+- Windows Git uses `nbstripout`, declared in the `dev` dependency group in `pyproject.toml` and locked with its transitive dependencies in `uv.lock`. Run `uv sync --locked`, then `uv run --locked nbstripout --install --attributes .gitattributes` after each clone or repository move. Check registration with `uv run --locked nbstripout --is-installed`. Inspect indexed notebooks with `git show :competition-slug/notebook.ipynb` before committing. Keep the Windows `.venv` for host Git tools and use the Kaggle image's Python for notebook execution and HTML export.
+- Do not use notebook or cell metadata/tags that tell `nbstripout` to retain outputs (`keep_output` or `init_cell`); committed code cells must always have empty outputs and null execution counts.
 - `.devcontainer/devcontainer.json` now pins the official GPU `v172` image by digest, mounts the local repository, requests GPU access, and configures Python/Jupyter extensions without changing the image's scientific packages.
 - `.devcontainer/verify_environment.py` records package versions and checks a real PyTorch CUDA operation. Run it inside the container before claiming the image is tested.
 - `.devcontainer/validate.ps1` starts the configured container with the installed VS Code Dev Containers CLI and runs the Python check. Host-only logs and current status are in `.git/kaggle-devcontainer/`. Check them before starting another validation process.
 - NVIDIA GPU visibility was verified on Windows, in WSL2, and in a CUDA container using `--gpus all`.
 - The Kaggle image pull and runtime checks are in progress. See `docs/windows-setup.md` for commands and the validation record; do not infer container startup or package compatibility from configuration syntax checks.
-- Notebook output filtering, HTML export, and Pages setup remain to be implemented. Remote Kaggle verification remains deferred.
+- HTML export and Pages setup remain to be implemented. Remote Kaggle verification remains deferred.
 
 ## Next Steps on Windows
 
 1. Verify the NVIDIA driver, WSL2, Docker GPU access, and the VS Code Dev Containers extension.
 2. Configure the official Kaggle GPU image as the Dev Container base. Verify startup, Python imports, and GPU access.
-3. Configure host-side notebook output filtering. Test that working outputs remain available and committed outputs are removed.
+3. After a fresh clone, install the host-side notebook output filter and verify staged notebooks using the commands above.
 4. Configure and test HTML export with tables and plots.
 5. Verify the Kaggle remote connection when the user is ready. Start a Kaggle session, open `Run > Kaggle Jupyter Server`, and use the `VS Code Compatible URL` in VS Code's remote Jupyter server picker.
 6. Choose HTML report paths and configure GitHub Pages deployment.

@@ -30,6 +30,42 @@ Verify GPU passthrough before downloading the Kaggle image:
 docker run --rm --gpus all nvidia/cuda:12.6.3-base-ubuntu22.04 nvidia-smi
 ```
 
+## Notebook Git filter
+
+Git runs on Windows. Host development tools are declared in the `dev` dependency group in `pyproject.toml`; `uv.lock` records the resolved versions and hashes of their dependencies. `uv sync --locked` installs them into the ignored Windows `.venv`. Notebook execution and HTML export use the Python environment supplied by the Kaggle GPU image.
+
+If `uv` is not installed, install it from a host PowerShell terminal:
+
+```powershell
+winget install --id astral-sh.uv --exact --source winget
+```
+
+Open a new terminal after installation. From the repository root, install the locked dependencies and register the Git filter:
+
+```powershell
+uv sync --locked
+uv run --locked nbstripout --install --attributes .gitattributes
+uv run --locked nbstripout --is-installed
+```
+
+The filter configuration in `.git/config` references the Windows `.venv` Python executable directly, so Git does not require environment activation. Registration is local and is not inherited by a fresh clone. Keep `.venv` available and re-register the filter after cloning or moving the checkout. The shared `.gitattributes` records which files use the filter.
+
+Run these setup commands on Windows. Keep the Windows `.venv` for host Git operations; select the Kaggle image's Python interpreter inside the Dev Container. Do not synchronize the mounted Windows `.venv` from Linux.
+
+To change host dependencies, use `uv add --dev` or `uv remove --dev` and review both `pyproject.toml` and `uv.lock`. For a deliberate dependency upgrade, use `uv lock --upgrade-package nbstripout`, adjusting its declared version constraint first when needed, then `uv sync --locked`. Commit both dependency files together.
+
+`git add` strips notebook execution results in the Git version while preserving the working notebook and its outputs for inspection and HTML export. `nbstripout` also normalizes cell IDs and removes selected metadata according to its defaults. Do not use `keep_output` or `init_cell` metadata/tags that retain outputs; this repository requires every committed code cell to have `outputs: []` and `execution_count: null`.
+
+After staging, inspect the indexed notebook, rather than the working file:
+
+```powershell
+git show :competition-slug/notebook.ipynb
+```
+
+Confirm that code and Markdown remain, code-cell outputs are empty, and execution counts are null. `uv run --locked nbstripout --verify notebook.ipynb` checks the working file, which intentionally retains outputs, so it is not an index check.
+
+Host-side validation uses temporary repositories to check real staging, working-output preservation, fresh-clone registration, and failure handling. Detailed fixture results remain local rather than adding custom filter scripts to the repository.
+
 ## Kaggle image and VS Code
 
 The configuration pins the official GPU image `v172`:
@@ -90,7 +126,6 @@ Keep machine-specific hardware details, resource allocations, installed host-too
 
 ## Remaining workflow work
 
-- Install an output-stripping Git filter in Windows Git, including a fresh-clone setup command and an index-content check. Ignore rules and cross-platform line endings are configured; see the README for local data/artifact directory conventions.
 - Export executed notebooks to HTML inside the container and verify tables, plots, logs, and required resources.
 - Choose competition report paths and configure GitHub Pages deployment.
 - Verify the remote Kaggle connection when requested and record its environment independently.
@@ -101,3 +136,6 @@ Keep machine-specific hardware details, resource allocations, installed host-too
 - [Docker Desktop Windows installation](https://docs.docker.com/desktop/setup/install/windows-install/)
 - [Docker Desktop GPU support](https://docs.docker.com/desktop/features/gpu/)
 - [VS Code Dev Containers](https://code.visualstudio.com/docs/devcontainers/containers)
+- [nbstripout Git filter](https://github.com/kynan/nbstripout#using-as-a-git-filter)
+- [uv project dependencies](https://docs.astral.sh/uv/concepts/projects/dependencies/)
+- [uv locking and syncing](https://docs.astral.sh/uv/concepts/projects/sync/)

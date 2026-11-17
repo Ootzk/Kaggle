@@ -59,7 +59,7 @@ Account for data paths, attached datasets, required packages, and accelerator se
 
 - Work is on branch `setup/dev-container-workflow`.
 - The initial workflow documentation and the Dev Container decision have been committed.
-- Remote Kaggle connection verification was explicitly deferred by the user.
+- The user has now requested local Digit Recognizer notebook execution followed by remote Kaggle GPU execution; HTML export comes last.
 - Use Windows Git for this checkout.
 - `.gitignore` excludes local environments, caches, credentials, and designated data/artifact directories at the root and directly inside each competition. Keep HTML reports and resources outside those directories. `.gitattributes` uses LF for text and CRLF for Windows command scripts.
 - Windows Git uses `nbstripout`, declared in the `dev` dependency group in `pyproject.toml` and locked with its transitive dependencies in `uv.lock`. Run `uv sync --locked`, then `uv run --locked nbstripout --install --attributes .gitattributes` after each clone or repository move. Check registration with `uv run --locked nbstripout --is-installed`. Inspect indexed notebooks with `git show :competition-slug/notebook.ipynb` before committing. Keep the Windows `.venv` for host Git tools and use the Kaggle image's Python for notebook execution and HTML export.
@@ -70,7 +70,7 @@ Account for data paths, attached datasets, required packages, and accelerator se
 - `.devcontainer/validate.ps1` starts the configured container with the installed VS Code Dev Containers CLI and runs the Python check. Host-only logs and current status are in `.git/kaggle-devcontainer/`. Check them before starting another validation process.
 - NVIDIA GPU visibility was verified on Windows, in WSL2, and in a CUDA container using `--gpus all`.
 - The pinned Kaggle GPU image downloaded successfully. Dev Container CLI startup, the workspace bind mount, scientific/notebook imports, and an actual PyTorch CUDA computation passed. The configured interpreter is `/usr/bin/python3`. See `docs/windows-setup.md` and untracked local validation logs for evidence. VS Code UI startup, extensions, and notebook kernel selection remain to be checked interactively.
-- HTML export and Pages setup remain to be implemented. Remote Kaggle verification remains deferred.
+- `digit-recognizer/baseline.ipynb` is the sample GPU baseline. Complete local execution with competition CSVs, then remote Kaggle GPU execution, before HTML export and Pages setup.
 
 ## Next Steps on Windows
 

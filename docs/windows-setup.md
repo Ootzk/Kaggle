@@ -30,6 +30,22 @@ Verify GPU passthrough before downloading the Kaggle image:
 docker run --rm --gpus all nvidia/cuda:12.6.3-base-ubuntu22.04 nvidia-smi
 ```
 
+## Per-container resource limits
+
+The Dev Container sets Docker CPU and memory hard limits through `runArgs`. Generic defaults leave room for host applications; override `KAGGLE_CONTAINER_CPUS` and `KAGGLE_CONTAINER_MEMORY` in the Windows environment before launching VS Code to suit the workload. Memory and memory-plus-swap use the same value, disabling container swap. The limit includes notebook kernels and container-side VS Code services, but excludes other containers, Docker Desktop, and other WSL workloads. GPU VRAM is separate.
+
+After changing limits, save notebooks and run **Dev Containers: Rebuild Container**. Changes do not update an already running container. Excess memory use can terminate a process inside the container; increase the limit deliberately if a workload needs more memory. Store machine-specific allocations in local diagnostics rather than shared documentation.
+
+Verify the effective limits inside the recreated container:
+
+```bash
+cat /sys/fs/cgroup/cpu.max
+cat /sys/fs/cgroup/memory.max
+cat /sys/fs/cgroup/memory.swap.max
+```
+
+A numeric CPU quota divided by its period gives the CPU allowance; `max` means unlimited. Memory is in bytes; the swap limit should be zero. Configuration syntax has been checked; runtime enforcement must be verified after recreation.
+
 ## Notebook Git filter
 
 Git runs on Windows. Host development tools are declared in the `dev` dependency group in `pyproject.toml`; `uv.lock` records the resolved versions and hashes of their dependencies. `uv sync --locked` installs them into the ignored Windows `.venv`. Notebook execution and HTML export use the Python environment supplied by the Kaggle GPU image.
@@ -108,7 +124,7 @@ Registry metadata identifies it as `linux/amd64` with CUDA 12.8.1. Its compresse
 
 The script imports the scientific and notebook packages, prints their versions and the Python executable, and verifies a real CUDA dot product with PyTorch. It fails if GPU access or computation fails. Retain the JSON output when recording a tested image. No additional Python packages are installed by this configuration.
 
-For a terminal check independent of the VS Code UI, run from the repository root on Windows:
+For a standalone image check independent of the VS Code UI, run from the repository root on Windows. This direct Docker command does not apply the Dev Container resource limits; use the CLI helper below to validate the configured container:
 
 ```powershell
 $image = (Get-Content .devcontainer/devcontainer.json -Raw | ConvertFrom-Json).image

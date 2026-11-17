@@ -1,7 +1,7 @@
 {
-  "id": "pocariblitz/kannada-mnist-eda",
-  "title": "Kannada MNIST EDA",
-  "code_file": "eda.ipynb",
+  "id": "pocariblitz/kannada-mnist-baseline",
+  "title": "Kannada MNIST Baseline",
+  "code_file": "baseline.ipynb",
   "language": "python",
   "kernel_type": "notebook",
   "is_private": true,

@@ -68,7 +68,7 @@ Local ten-epoch run with tensor subsets: validation accuracy **0.993000** (macro
 
 ## Remote exploration
 
-`kernel-metadata.json` configures the private GPU baseline notebook at `pocariblitz/kannada-mnist-baseline`, with the competition data attached. Internet is enabled for development execution; this is not a final scoring configuration. Notebook push runs the baseline but does not submit predictions to the competition.
+`kernel-metadata.json` configures the private GPU baseline notebook at `pocariblitz/kannada-mnist-baseline`, with the competition data attached. Internet is disabled because the competition forbids it. The competition data is attached through the notebook metadata; KaggleHub resolves that data in the Kaggle environment. Local missing-input downloads still use KaggleHub with local authentication. Notebook push runs the baseline but does not submit predictions to the competition.
 
 For an interactive session, select the remote Kaggle Jupyter kernel and check the environment before running. KaggleHub may ignore `output_dir` on Kaggle; use its returned path. Generated files belong under a writable `/kaggle/working` directory remotely.
 

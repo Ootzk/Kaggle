@@ -26,7 +26,7 @@ The competition slug and directory preserve the URL's case: `competitions/Kannad
 | `train.csv` | Labeled development data; reserve a fixed stratified validation split for the baseline |
 | `test.csv` | Competition test pixels with `id` values |
 | `sample_submission.csv` | Submission column order and IDs: `id,label` |
-| `Dig-MNIST.csv` | Separate labeled challenge set, held out from initial training |
+| `Dig-MNIST.csv` | Fixed 80/20 split: mixed may train on 80%; both models evaluate on the same 20% |
 
 Do not confuse this competition's `id` column with Digit Recognizer's `ImageId`. Read the template and retain its IDs and ordering. Do not hard-code test row counts in a future prediction pipeline.
 
@@ -34,14 +34,16 @@ This historical competition ended in 2019 and uses **code submissions** evaluate
 
 ## CNN baseline and fixed split
 
-`baseline.ipynb` trains the Digit Recognizer CNN architecture for ten fixed epochs with Adam (learning rate 0.001) and batch size 256. Only the training partition of `train.csv` is used for fitting; Dig-MNIST is evaluated after the final epoch and never used for optimization or checkpoint selection.
+`baseline.ipynb` trains the Digit Recognizer CNN architecture for ten fixed epochs with Adam (learning rate 0.001) and batch size 256. Only the training partition of `train.csv` is used for fitting; Only the held-out 20% Dig-MNIST subset is evaluated after the final epoch. Baseline never uses Dig-MNIST for optimization or checkpoint selection.
 
 TRAIN is stored in one PyTorch `TensorDataset`. Scikit-learn creates stratified row indices, `Subset` selects the training and validation rows without copying the image arrays, and `DataLoader` forms batches. Only the training loader shuffles; validation and inference retain row order. Dig-MNIST and test inference also use tensor datasets and loaders.
 
 The split settings are defined once inside the notebook:
 
 - Seed **42**, stratified by `label`.
-- **80% training / 20% validation**: 48,000 and 12,000 rows for the current CSV.
+- **TRAIN 80/20**: 48,000 learning rows and 12,000 validation rows.
+- **Dig-MNIST 80/20**: 8,192 learning rows and 2,048 validation rows; split independently with the same seed and stratification.
+- Baseline does not fit on Dig learning rows; mixed adds only those rows. Both validation partitions stay excluded from fitting.
 - Split original CSV row positions before any sorting, filtering, augmentation, or concatenation.
 - Keep split seed separate from model and DataLoader random state when changing experiments.
 
@@ -58,17 +60,40 @@ train_indices, valid_indices = train_test_split(
     random_state=split_config["seed"],
     stratify=train[split_config["stratify_column"]].to_numpy(),
 )
+dig_train_indices, dig_valid_indices = train_test_split(
+    np.arange(len(dig_mnist)),
+    test_size=split_config["validation_fraction"],
+    random_state=split_config["seed"],
+    stratify=dig_mnist[split_config["stratify_column"]].to_numpy(),
+)
 ```
 
-No external split configuration file is needed locally or remotely. The baseline saves the training CSV SHA-256, scikit-learn version, and complete split row positions in `output/baseline/split_manifest.json`. Reuse these recorded positions if reproducing the partition under a different library version; verify the input file hash first. Fixing the split does not guarantee bit-identical GPU training results.
+No external split configuration file is needed locally or remotely. Both notebooks save TRAIN and Dig-MNIST CSV hashes, the scikit-learn version, and both complete split row lists in `output/baseline/split_manifest.json`. Reuse these recorded positions if reproducing the partition under a different library version; verify the input file hash first. Fixing the split does not guarantee bit-identical GPU training results.
 
 Outputs under `output/baseline/` include final weights, learning curves in the working notebook, training/per-digit metric CSVs, separate validation and Dig-MNIST summaries, confident-error tables, and `submission.csv`. Test IDs come from the supplied `id,label` template; no test accuracy is computed without ground truth. No upload or submission is performed automatically.
 
-Local ten-epoch run with tensor subsets: validation accuracy **0.993000** (macro F1 **0.993007**); Dig-MNIST accuracy **0.716895** (macro F1 **0.713235**). These scores use the final epoch and the fixed split above.
+## Mixed-data experiment
+
+`mixed.ipynb` uses the same CNN, optimizer, learning rate, batch size, model seed, ten epochs, and both split definitions as baseline. PyTorch `ConcatDataset` combines the 48,000-row TRAIN learning subset with the 8,192-row Dig learning subset. Training contains 56,192 examples; the 12,000 TRAIN validation and 2,048 Dig validation images remain held out.
+
+Compare both models using the exact same validation rows from each source. Dig-MNIST validation is now a held-out metric for mixed too. Once repeatedly used for model development, these are validation scores, not an untouched final test. The 2,048-row Dig holdout is suitable for an initial comparison; small score differences warrant further confirmation.
+
+Artifacts go to separate `output/baseline/` and `output/mixed/` directories. Mixed still has more batches per epoch, so equal epochs do not mean equal optimizer updates. Neither notebook trains on competition test images or submits predictions automatically.
+
+### Local comparison with shared holdouts
+
+| Model | TRAIN validation accuracy | Dig validation accuracy |
+| --- | ---: | ---: |
+| Baseline | 99.2667% | 72.4609% |
+| Mixed | 99.3583% | 94.8242% |
+
+Both runs use ten epochs and the same held-out row positions. Earlier experiments evaluating all Dig images are superseded by this comparison.
 
 ## Remote exploration
 
 `kernel-metadata.json` configures the private GPU baseline notebook at `pocariblitz/kannada-mnist-baseline`, with the competition data attached. Internet is disabled because the competition forbids it. The competition data is attached through the notebook metadata; KaggleHub resolves that data in the Kaggle environment. Local missing-input downloads still use KaggleHub with local authentication. Notebook push runs the baseline but does not submit predictions to the competition.
+
+`mixed-kernel-metadata.json` provides the matching private GPU, internet-disabled configuration for `pocariblitz/kannada-mnist-mixed`. Package it as `kernel-metadata.json` beside the committed `mixed.ipynb` when pushing mixed; keep the baseline metadata and source in a separate package. Both notebooks attach `Kannada-MNIST` and produce a root-level `submission.csv` on Kaggle.
 
 For an interactive session, select the remote Kaggle Jupyter kernel and check the environment before running. KaggleHub may ignore `output_dir` on Kaggle; use its returned path. Generated files belong under a writable `/kaggle/working` directory remotely.
 

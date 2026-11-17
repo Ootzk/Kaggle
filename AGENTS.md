@@ -1,6 +1,6 @@
 # Project Guidelines
 
-This repository tracks Kaggle notebook source and HTML execution reports with Git. Development will use VS Code Dev Containers on Windows with an NVIDIA GPU, based on the official Kaggle GPU image. Notebook execution on a remote Kaggle Jupyter kernel remains part of the workflow.
+This repository tracks Kaggle notebook source and HTML execution reports with Git. Development uses VS Code Dev Containers on Ubuntu with an NVIDIA GPU, based on the official Kaggle GPU `latest` image. Notebook execution on a remote Kaggle Jupyter kernel remains part of the workflow.
 
 ## Repository Structure
 
@@ -12,22 +12,22 @@ This repository tracks Kaggle notebook source and HTML execution reports with Gi
 
 ## Development Environment
 
-- Use the official `gcr.io/kaggle-gpu-images/python` image as the Dev Container base and pin a tested version or digest.
+- Use the official `gcr.io/kaggle-gpu-images/python:latest` image as the Dev Container base. Follow `latest` deliberately; do not pin a version or digest. Pull before rebuilding and revalidate each updated image. Record its resolved digest in untracked local diagnostics.
 - Use the Python and scientific packages supplied by that image. Manage additional development tools explicitly and preserve compatibility with the base environment.
 - Define the VS Code container configuration in `.devcontainer/` and track it with Git.
 - Mount the local repository into the container so edits persist on the development machine.
 - Configure the Python and Jupyter extensions for the container environment.
-- Run notebook development tools and HTML export inside the container. Manage host Git tools explicitly in `pyproject.toml` and `uv.lock`, and run them from the Windows `.venv` created by `uv sync --locked`.
-- On Windows, verify Docker GPU access through the WSL2 backend and the NVIDIA driver before relying on local GPU execution.
-- Validate container startup, Python imports, and local GPU access on the Windows machine.
+- Run notebook development tools and HTML export inside the container. Manage notebook Git tools as explicitly versioned installations in `.devcontainer/Dockerfile`, inside `/opt/kaggle-git-tools`. Keep this environment separate from the supplied scientific Python and leave the notebook interpreter at `/usr/bin/python3`. Do not require host Python development tools.
+- Run Docker Engine directly on Ubuntu. Verify the NVIDIA driver and NVIDIA Container Toolkit runtime before relying on `--gpus all`. Use the current stable Docker Engine from its official Ubuntu repository.
+- Validate container startup, Python imports, and local GPU access on the Ubuntu machine. Use a non-root container user matching the host UID/GID so bind-mounted files retain host ownership.
 - Select the remote Kaggle Jupyter kernel when executing with Kaggle server resources. Confirm the selected kernel before running a notebook.
 - Record the Python and relevant package versions for reproducibility. Verify local and remote environments independently.
-- Keep shared documentation at the Windows + NVIDIA GPU level. Do not include workstation-specific GPU models, resource allocations, OS builds, installed host-tool versions, or local troubleshooting history. Keep reproducible container image pins and required software settings; store detailed machine diagnostics in untracked local logs.
+- Keep shared documentation at the Ubuntu + NVIDIA GPU level. Do not include workstation-specific GPU models, resource allocations, OS builds, installed host-tool versions, or local troubleshooting history. Keep the official `latest` image reference and required software settings; store detailed machine diagnostics in untracked local logs.
 
 ## Development and Version Control
 
 - Treat notebooks in the local repository as the source of truth.
-- Run commit, push, and pull operations from the development machine using its GitHub authentication. Choose the Windows or WSL Git environment during setup.
+- Run staging, commit, push, and pull from the Dev Container through VS Code Source Control or its terminal. Use VS Code forwarding of the Ubuntu host credential helper or SSH agent; never bake credentials or private authentication files into the image or repository.
 - Apply fixes and improvements discovered during Kaggle execution to the local source.
 - Track code and Markdown in `.ipynb` files. In the committed version, code-cell `outputs` must be an empty array and `execution_count` must be `null`.
 - Configure output stripping as a Git filter in the environment that runs Git. Its executable must be available in that environment, including after a fresh clone.
@@ -41,7 +41,7 @@ This repository tracks Kaggle notebook source and HTML execution reports with Gi
 2. Select the intended kernel. Connect to the remote Kaggle Jupyter server for execution on Kaggle resources.
 3. Execute the notebook and inspect the results.
 4. Save the executed notebook to the mounted repository and export it to HTML with cell outputs included.
-5. Stage changes using host-side Git and verify that notebook outputs and execution counts are stripped from the staged version.
+5. Stage changes using Git inside the Dev Container and verify that notebook outputs and execution counts are stripped from the staged version.
 6. Commit the notebook source and HTML report, then push to GitHub.
 7. Publish the HTML report through GitHub Pages and submit competition entries on Kaggle.
 
@@ -58,33 +58,32 @@ Account for data paths, attached datasets, required packages, and accelerator se
 ## Handoff Status
 
 - Work is on branch `setup/dev-container-workflow`.
-- The initial workflow documentation and the Dev Container decision have been committed.
-- The user has now requested local Digit Recognizer notebook execution followed by remote Kaggle GPU execution; HTML export comes last.
-- Use Windows Git for this checkout.
-- `.gitignore` excludes local environments, caches, credentials, and designated data/artifact directories at the root and directly inside each competition. Keep HTML reports and resources outside those directories. `.gitattributes` uses LF for text and CRLF for Windows command scripts.
-- Windows Git uses `nbstripout`, declared in the `dev` dependency group in `pyproject.toml` and locked with its transitive dependencies in `uv.lock`. Run `uv sync --locked`, then `uv run --locked nbstripout --install --attributes .gitattributes` after each clone or repository move. Check registration with `uv run --locked nbstripout --is-installed`. Inspect indexed notebooks with `git show :competition-slug/notebook.ipynb` before committing. Keep the Windows `.venv` for host Git tools and use the Kaggle image's Python for notebook execution and HTML export.
-- Do not use notebook or cell metadata/tags that tell `nbstripout` to retain outputs (`keep_output` or `init_cell`); committed code cells must always have empty outputs and null execution counts.
-- `nbdime` is also managed in the host `dev` dependency group and `uv.lock`. `.gitattributes` uses its `jupyternotebook` diff/merge drivers while retaining the `nbstripout` clean filter. Follow `docs/windows-setup.md` to register drivers with explicit Windows `.venv/Scripts` paths so host Git works without environment activation.
-- `.devcontainer/devcontainer.json` now pins the official GPU `v172` image by digest, mounts the local repository, requests GPU access, and configures Python/Jupyter extensions without changing the image's scientific packages.
-- `.devcontainer/verify_environment.py` records package versions and checks a real PyTorch CUDA operation. Run it inside the container before claiming the image is tested.
-- `.devcontainer/validate.ps1` starts the configured container with the installed VS Code Dev Containers CLI and runs the Python check. Host-only logs and current status are in `.git/kaggle-devcontainer/`. Check them before starting another validation process.
-- NVIDIA GPU visibility was verified on Windows, in WSL2, and in a CUDA container using `--gpus all`.
-- The pinned Kaggle GPU image downloaded successfully. Dev Container CLI startup, the workspace bind mount, scientific/notebook imports, and an actual PyTorch CUDA computation passed. The configured interpreter is `/usr/bin/python3`. See `docs/windows-setup.md` and untracked local validation logs for evidence. VS Code UI startup, extensions, and notebook kernel selection remain to be checked interactively.
-- `digit-recognizer/baseline.ipynb` is the sample GPU baseline. Complete local execution with competition CSVs, then remote Kaggle GPU execution, before HTML export and Pages setup.
+- Development runs on Ubuntu. Use a single container VS Code window for notebooks and Git; the host supplies Docker and forwarded Git authentication.
+- The user explicitly chose the official Kaggle GPU `latest` image. The Dev Container builds a thin image from it, adding a non-root `vscode` user and isolated Git tools without changing scientific packages. The `USER_UID`/`USER_GID` build arguments match the Ubuntu workspace owner; the validation helper supplies the host IDs through `KAGGLE_HOST_UID`/`KAGGLE_HOST_GID`. Automatic UID rewriting is disabled to avoid a redundant image build.
+- `.gitignore` excludes environments, caches, credentials, data, and generated artifacts. Keep HTML reports and their required resources outside ignored directories.
+- The Dockerfile pins `nbstripout`, `nbdime`, and the startup compatibility dependency `wrapt` in an isolated `/opt/kaggle-git-tools` environment. Host `.venv` and repository Python dependency manifests are not used. `postStartCommand` automatically registers required notebook Git filters and diff/merge drivers on fresh clones, recreations, and restarts. All Git work runs inside the container.
+- Do not use notebook or cell metadata/tags that retain outputs (`keep_output` or `init_cell`). Inspect indexed notebooks with `git show :competition-slug/notebook.ipynb` before committing: every code cell must have empty outputs and a null execution count.
+- Notebook execution and HTML export use the Kaggle image's Python, independently of the Git tools environment. The configured interpreter is `/usr/bin/python3`; validate it after image updates.
+- `.devcontainer/setup-gpu.sh` installs NVIDIA Container Toolkit and configures its Docker runtime on Ubuntu with sudo. Docker restart is a separate host action because other containers may be running.
+- `.devcontainer/validate.sh` pulls the configured image, starts the Dev Container using the installed CLI or VS Code extension CLI, and runs `.devcontainer/verify_environment.py` as the development user. Host-only logs and status stay in `.git/kaggle-devcontainer/`; check them before launching another validation.
+- `.devcontainer/verify_git_workflow.py` verifies actual staging with a temporary index, working-output preservation, diff/merge tools, and fresh-repository registration without changing the real staging state.
+- `postAttachCommand` routes container Git credentials through the live VS Code host proxy. `.devcontainer/verify_git_auth.py` verifies HTTPS GitHub authentication without printing or storing credentials. CLI-only startup skips the attachment hook; attach VS Code before testing authentication.
+- The environment check records package versions, verifies non-root workspace writes, and performs a real PyTorch CUDA operation. Previous Windows verification is not evidence for Ubuntu or a newly pulled image.
+- Ubuntu validation passed: the official GPU `latest` image was downloaded; Dev Container build/startup, `/usr/bin/python3`, scientific/notebook imports, non-root workspace writes with host ownership, actual PyTorch CUDA computation, and configured CPU/memory/swap limits were verified. The resolved image digest and detailed diagnostics are in `.git/kaggle-devcontainer/`. Container notebook Git staging/output preservation, diff/merge, fresh-repository initialization, and preservation of the original staging entries passed. Scientific package versions were unchanged. VS Code configured the host credential proxy on attachment; a live authenticated GitHub request from the attached container remains to be verified. Notebook kernel selection still requires an interactive check.
+- `digit-recognizer/baseline.ipynb` is the GPU baseline. Complete local execution with competition CSVs, then remote Kaggle GPU execution, before HTML export and GitHub Pages setup. Confirm each kernel and record its environment independently.
 
-## Next Steps on Windows
+## Next Steps on Ubuntu
 
-1. Verify the NVIDIA driver, WSL2, Docker GPU access, and the VS Code Dev Containers extension.
-2. Configure the official Kaggle GPU image as the Dev Container base. Verify startup, Python imports, and GPU access.
-3. After a fresh clone, install the host-side notebook output filter and verify staged notebooks using the commands above.
-4. Configure and test HTML export with tables and plots.
-5. Verify the Kaggle remote connection when the user is ready. Start a Kaggle session, open `Run > Kaggle Jupyter Server`, and use the `VS Code Compatible URL` in VS Code's remote Jupyter server picker.
-6. Choose HTML report paths and configure GitHub Pages deployment.
-7. Update these instructions with the commands and settings actually tested.
+1. After image updates, pull `latest` and repeat Dev Container validation with `bash .devcontainer/validate.sh`. Before launching VS Code, export `KAGGLE_HOST_UID=$(id -u)` and `KAGGLE_HOST_GID=$(id -g)` so the build uses the host IDs; the validation helper sets these automatically.
+2. Check VS Code container extensions and choose the local Python kernel interactively.
+3. Run Digit Recognizer locally, then on the remote Kaggle GPU kernel. Connect using an active Kaggle session's VS Code compatible Jupyter server URL; never commit URLs or tokens.
+4. Export executed notebooks to HTML inside the container, choose report paths, and configure GitHub Pages deployment.
+5. Update these instructions with tested commands and evidence. Keep workstation-specific diagnostics in untracked local logs.
 
 ## References
 
 - [Official Kaggle Python images](https://github.com/Kaggle/docker-python)
 - [Kaggle notebook and Jupyter server documentation](https://www.kaggle.com/docs/notebooks)
 - [VS Code Dev Containers](https://code.visualstudio.com/docs/devcontainers/containers)
-- [Docker Desktop GPU support on Windows](https://docs.docker.com/desktop/features/gpu/)
+- [Docker Engine on Ubuntu](https://docs.docker.com/engine/install/ubuntu/)
+- [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)

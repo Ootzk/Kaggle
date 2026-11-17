@@ -4,43 +4,32 @@ Kaggle notebooks and HTML execution reports, organized by competition and versio
 
 ## Workflow
 
-1. Develop notebooks in VS Code using a Dev Container based on the official Kaggle GPU image, with the local project directory mounted.
-2. Use a Windows machine with an NVIDIA GPU for local development. Connect VS Code to a remote Kaggle Jupyter kernel to execute with Kaggle server resources.
-3. Export execution results to HTML with cell outputs included using tools in the Dev Container.
-4. Commit notebook source and HTML reports from the development machine, push to GitHub, and publish reports through GitHub Pages.
+1. Develop on Ubuntu with an NVIDIA GPU, using VS Code Dev Containers and the official `gcr.io/kaggle-gpu-images/python:latest` image.
+2. Run locally with the container's Python kernel, then connect VS Code to a remote Kaggle Jupyter GPU kernel when Kaggle resources are needed. Check the selected kernel before execution.
+3. Export executed notebooks to HTML inside the container, with tables, plots, and logs included.
+4. Use Git in the Dev Container through VS Code Source Control or its terminal to commit notebook source and HTML reports, push to GitHub, and publish reports through GitHub Pages.
 5. Submit competition entries on Kaggle.
 
-Git tracks notebook code and Markdown with cell outputs and execution counts stripped. Execution results are preserved in HTML reports. Git operations and GitHub authentication are managed on the development machine.
+Git tracks notebook code and Markdown with outputs and execution counts stripped. Working notebooks retain their results; HTML reports preserve execution results for publication. Notebook development and Git operations share one container VS Code window. VS Code forwards authentication from the Ubuntu host.
 
-## Organization
+## Setup
 
-Each competition has a directory at the repository root, named after its Kaggle competition slug. The directory contains its notebooks and HTML reports.
+Follow [Ubuntu GPU setup and validation](docs/ubuntu-setup.md). Docker Engine runs directly on Ubuntu and needs the NVIDIA Container Toolkit for `--gpus all`.
 
-Store local data in `data/`, `datasets/`, or `input/`, and generated files in `output/`, `working/`, `models/`, `checkpoints/`, `submissions/`, `logs/`, `runs/`, `tmp/`, or `temp/`. These directories are ignored at the repository root and directly inside each competition. Keep HTML reports and their resources outside these directories so Git can track them. Data and model file extensions are not ignored globally; use the designated directories.
+The [Dev Container configuration](.devcontainer/devcontainer.json) builds a thin development image from the official Kaggle GPU `latest` image. It adds a non-root user for Linux workspace ownership and installs Git tools in an isolated Python environment without upgrading the image's scientific packages. The repository is mounted at `/workspaces/Kaggle`; Python and Jupyter extensions run inside the container.
 
-Environment files and credentials are ignored; `.env.example` and `.env.template` remain trackable. Text files use LF across Windows and Linux, with CRLF for Windows `.bat` and `.cmd` scripts.
+The [Dockerfile](.devcontainer/Dockerfile) declares the versions of `nbstripout` and `nbdime` and installs them in `/opt/kaggle-git-tools`. No host Python environment or project dependency manifest is needed for these tools. The notebook interpreter remains `/usr/bin/python3`.
 
-## Setup Status
+On every container start, `.devcontainer/configure-git.sh` registers the notebook filter and diff/merge drivers in the repository's local Git configuration. Fresh clones and recreated containers use the same setup automatically. The container's Source Control integration is enabled. Run Git inside the container; its driver settings use container tools.
 
-The Windows Dev Container configuration is in [`.devcontainer/devcontainer.json`](.devcontainer/devcontainer.json). It uses the official Kaggle GPU `v172` image pinned by digest, requests the NVIDIA GPU, and mounts this repository at `/workspaces/Kaggle`. It uses the image's Python environment without installing or upgrading scientific packages.
+After VS Code attaches, its credential helper forwards requests to the host. The attachment hook routes URL-specific helpers through this proxy as well. Credentials and private authentication files are not copied into the image or repository. See [Git and authentication setup](docs/ubuntu-setup.md#notebook-git-inside-the-container).
 
-Follow [Windows setup and validation](docs/windows-setup.md) before opening the container. Container execution validation is tracked there separately from configuration checks.
+The image deliberately follows `latest`. Pull it before rebuilding to adopt an update, then repeat environment validation. Record the resolved image digest and package versions in untracked local diagnostics rather than pinning the configuration.
 
-Use Windows Git for this checkout. Install `uv` on Windows, then run the following from a host PowerShell terminal at the repository root:
+## Organization and status
 
-```powershell
-uv sync --locked
-uv run --locked nbstripout --install --attributes .gitattributes
-uv run --locked nbstripout --is-installed
-uv run --locked nbdime config-git --enable
-git config --local diff.jupyternotebook.command '".venv/Scripts/git-nbdiffdriver.exe" diff'
-git config --local merge.jupyternotebook.driver '".venv/Scripts/git-nbmergedriver.exe" merge %O %A %B %L %P'
-```
+Each competition has a directory named after its Kaggle URL slug. Store notebooks and HTML reports there. Put local data in `data/`, `datasets/`, or `input/`, and generated artifacts in the ignored `output/`, `working/`, `models/`, `checkpoints/`, `submissions/`, `logs/`, `runs/`, `tmp/`, or `temp/` directories at the root or directly within a competition. Keep HTML reports and required resources outside those ignored directories.
 
-[`pyproject.toml`](pyproject.toml) declares host development tools, and [`uv.lock`](uv.lock) locks their dependency versions. `uv sync --locked` installs them into the ignored Windows `.venv`. The Git filter preserves working notebook outputs while stripping results from staged notebooks. Register the filter after each clone or repository move. Keep this environment for Windows Git; use the Kaggle image's Python for notebooks and HTML export. Check staged notebook contents with `git show :competition-slug/notebook.ipynb` before committing.
+Credentials, environments, and caches are ignored. `.env.example` and `.env.template` remain trackable.
 
-See [notebook Git setup](docs/windows-setup.md#notebook-git-filter) for details. HTML export and GitHub Pages deployment are pending. Remote Kaggle connection verification remains deferred.
-
-`nbstripout` removes execution results when staging; `nbdime` provides notebook-aware Git diffs and merges. The explicit Windows driver paths let regular `git diff` and `git merge` use the project environment without activation. See [notebook diff and merge](docs/windows-setup.md#notebook-diff-and-merge) for visual review commands.
-
-See [AGENTS.md](AGENTS.md) for development guidelines, handoff details, and the setup sequence.
+The [Digit Recognizer baseline](digit-recognizer/README.md) is ready for local and remote GPU execution checks. Complete those in that order before HTML export and GitHub Pages setup. See [AGENTS.md](AGENTS.md) for project guidelines and handoff status.

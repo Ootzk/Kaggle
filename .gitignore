@@ -1,0 +1,54 @@
+# Python environments, caches, and notebook checkpoints
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.cache/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local credentials (keep shareable environment templates)
+.env
+.env.*
+!.env.example
+!.env.template
+.kaggle/
+kaggle.json
+.credentials/
+credentials.json
+*.pem
+*.key
+
+# Repository-root data and execution artifacts.
+# Published reports live under reports/ and remain tracked.
+/data/
+/datasets/
+/input/
+/output/
+/working/
+/models/
+/checkpoints/
+/submissions/
+/logs/
+/runs/
+/tmp/
+/temp/
+
+# Competition-local data and execution artifacts in the source tree.
+/competitions/*/data/
+/competitions/*/datasets/
+/competitions/*/input/
+/competitions/*/output/
+/competitions/*/working/
+/competitions/*/models/
+/competitions/*/checkpoints/
+/competitions/*/submissions/
+/competitions/*/logs/
+/competitions/*/runs/
+/competitions/*/tmp/
+/competitions/*/temp/

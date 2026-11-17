@@ -1,0 +1,8 @@
+# Use LF for text files in the Ubuntu Dev Container.
+* text=auto eol=lf
+
+# Notebook source stays in regular Git with outputs stripped.
+*.ipynb text eol=lf filter=nbstripout diff=jupyternotebook merge=jupyternotebook
+
+# Generated HTML uses LFS; source manifests stay in regular Git.
+reports/**/*.html filter=lfs diff=lfs merge=lfs -text

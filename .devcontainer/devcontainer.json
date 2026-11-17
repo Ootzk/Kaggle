@@ -1,0 +1,35 @@
+{
+  "name": "Kaggle GPU",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "args": {
+      "KAGGLE_IMAGE": "gcr.io/kaggle-gpu-images/python:latest",
+      "USER_UID": "${localEnv:KAGGLE_HOST_UID:1000}",
+      "USER_GID": "${localEnv:KAGGLE_HOST_GID:1000}"
+    }
+  },
+  "runArgs": [
+    "--gpus=all",
+    "--shm-size=2g",
+    "--cpus=${localEnv:KAGGLE_CONTAINER_CPUS:4}",
+    "--memory=${localEnv:KAGGLE_CONTAINER_MEMORY:8g}",
+    "--memory-swap=${localEnv:KAGGLE_CONTAINER_MEMORY:8g}"
+  ],
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/Kaggle,type=bind",
+  "workspaceFolder": "/workspaces/Kaggle",
+  "overrideCommand": true,
+  "remoteUser": "vscode",
+  "updateRemoteUserUID": false,
+  "postStartCommand": "bash .devcontainer/configure-git.sh",
+  "postAttachCommand": "/usr/bin/python3 .devcontainer/configure-auth.py",
+  "customizations": {
+    "vscode": {
+      "extensions": ["ms-python.python", "ms-python.vscode-pylance", "ms-toolsai.jupyter"],
+      "settings": {
+        "git.enabled": true,
+        "python.defaultInterpreterPath": "/usr/bin/python3",
+        "python.terminal.activateEnvironment": false
+      }
+    }
+  }
+}

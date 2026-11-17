@@ -22,6 +22,7 @@ This repository tracks Kaggle notebook source and HTML execution reports with Gi
 - Validate container startup, Python imports, and local GPU access on the Windows machine.
 - Select the remote Kaggle Jupyter kernel when executing with Kaggle server resources. Confirm the selected kernel before running a notebook.
 - Record the Python and relevant package versions for reproducibility. Verify local and remote environments independently.
+- Keep shared documentation at the Windows + NVIDIA GPU level. Do not include workstation-specific GPU models, resource allocations, OS builds, installed host-tool versions, or local troubleshooting history. Keep reproducible container image pins and required software settings; store detailed machine diagnostics in untracked local logs.
 
 ## Development and Version Control
 
@@ -58,12 +59,14 @@ Account for data paths, attached datasets, required packages, and accelerator se
 
 - Work is on branch `setup/dev-container-workflow`.
 - The initial workflow documentation and the Dev Container decision have been committed.
-- The earlier Microsoft Python image configuration, uv project files, ignore rules, and helper scripts were discarded when switching to the official Kaggle GPU image.
-- The temporary Mac-side notebook Git filter and the nbstripout tool installed for it were removed.
-- Official GPU image metadata was checked for `latest`, `v173`, and `v172`. All three reported `linux/amd64`.
-- The previous Mac used ARM64. A small AMD64 Alpine container ran successfully under emulation, but the Kaggle image itself was never downloaded or launched.
 - Remote Kaggle connection verification was explicitly deferred by the user.
-- The repository currently contains workflow documentation. Container, output filtering, HTML export, and Pages setup remain to be implemented.
+- Use Windows Git for this checkout.
+- `.devcontainer/devcontainer.json` now pins the official GPU `v172` image by digest, mounts the local repository, requests GPU access, and configures Python/Jupyter extensions without changing the image's scientific packages.
+- `.devcontainer/verify_environment.py` records package versions and checks a real PyTorch CUDA operation. Run it inside the container before claiming the image is tested.
+- `.devcontainer/validate.ps1` starts the configured container with the installed VS Code Dev Containers CLI and runs the Python check. Host-only logs and current status are in `.git/kaggle-devcontainer/`. Check them before starting another validation process.
+- NVIDIA GPU visibility was verified on Windows, in WSL2, and in a CUDA container using `--gpus all`.
+- The Kaggle image pull and runtime checks are in progress. See `docs/windows-setup.md` for commands and the validation record; do not infer container startup or package compatibility from configuration syntax checks.
+- Notebook output filtering, HTML export, and Pages setup remain to be implemented. Remote Kaggle verification remains deferred.
 
 ## Next Steps on Windows
 

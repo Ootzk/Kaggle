@@ -18,6 +18,10 @@ Each competition has a directory at the repository root, named after its Kaggle 
 
 ## Setup Status
 
-The workflow is documented. Development is moving to Windows with an NVIDIA GPU. Dev Container configuration, notebook output filtering, HTML export, and GitHub Pages deployment are pending. Remote Kaggle connection verification will be performed later.
+The Windows Dev Container configuration is in [`.devcontainer/devcontainer.json`](.devcontainer/devcontainer.json). It uses the official Kaggle GPU `v172` image pinned by digest, requests the NVIDIA GPU, and mounts this repository at `/workspaces/Kaggle`. It uses the image's Python environment without installing or upgrading scientific packages.
+
+Follow [Windows setup and validation](docs/windows-setup.md) before opening the container. Container execution validation is tracked there separately from configuration checks.
+
+Notebook output filtering, HTML export, and GitHub Pages deployment are pending. Use Windows Git for this checkout. Remote Kaggle connection verification remains deferred.
 
 See [AGENTS.md](AGENTS.md) for development guidelines, handoff details, and the setup sequence.

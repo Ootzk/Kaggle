@@ -3,7 +3,6 @@
 Kaggle notebook source and published execution reports, organized by competition.
 
 - [Published reports](https://ootzk.github.io/Kaggle/)
-- [Digit Recognizer — Baseline](https://ootzk.github.io/Kaggle/digit-recognizer/baseline.html)
 
 ## Development environment
 
@@ -44,4 +43,4 @@ Competition directory names follow their Kaggle URL slugs. Working notebooks ret
 5. Commit source, HTML, and its manifest together, then push the feature branch and merge into `main` when ready.
 6. GitHub Pages deploys matching reports from **`main` only**. Feature branches and pull requests do not publish.
 
-Kaggle notebook execution and competition prediction submission are separate actions. The [Digit Recognizer guide](competitions/digit-recognizer/README.md) covers the current baseline. [AGENTS.md](AGENTS.md) records repository rules.
+Kaggle notebook execution and competition prediction submission are separate actions. [AGENTS.md](AGENTS.md) records repository rules.

@@ -58,7 +58,7 @@ This repository tracks Kaggle notebook source and HTML execution reports. Develo
 
 ## Validation and current status
 
-- Work is on `setup/dev-container-workflow`; merge into `main` when ready to publish. Reports are available at `https://ootzk.github.io/Kaggle/`.
+- The environment/report workflow is merged into `main`. New competition work starts on a dedicated branch; merge into `main` when ready to publish. Reports are available at `https://ootzk.github.io/Kaggle/`.
 - Ubuntu Dev Container startup, non-root workspace ownership, scientific imports, `/usr/bin/python3`, effective resource limits, and real PyTorch CUDA computation have passed validation. Repeat after image updates.
 - Notebook Git checks passed for output stripping, working-output preservation, diff/merge, fresh-repository registration, and original-index preservation. GitHub authentication through the attached VS Code proxy passed.
 - Digit Recognizer completed five-epoch local and Kaggle GPU execution. Local validation accuracy was 0.980357 and macro F1 was 0.980100; the Kaggle competition submission scored 0.97778.

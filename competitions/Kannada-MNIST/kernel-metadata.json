@@ -1,0 +1,15 @@
+{
+  "id": "pocariblitz/kannada-mnist-eda",
+  "title": "Kannada MNIST EDA",
+  "code_file": "eda.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_internet": true,
+  "dataset_sources": [],
+  "competition_sources": [
+    "Kannada-MNIST"
+  ],
+  "kernel_sources": []
+}

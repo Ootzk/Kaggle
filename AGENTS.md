@@ -1,6 +1,6 @@
 # Project Guidelines
 
-This repository tracks Kaggle notebook source and HTML execution reports with Git. Development uses VS Code Dev Containers on a local Mac. Git operations run on the Mac, while notebook execution uses a Kaggle remote Jupyter kernel.
+This repository tracks Kaggle notebook source and HTML execution reports with Git. Development will use VS Code Dev Containers on Windows with an NVIDIA GPU, based on the official Kaggle GPU image. Notebook execution on a remote Kaggle Jupyter kernel remains part of the workflow.
 
 ## Repository Structure
 
@@ -10,56 +10,74 @@ This repository tracks Kaggle notebook source and HTML execution reports with Gi
 - Use descriptive notebook names such as `eda.ipynb`, `baseline.ipynb`, and `train_catboost.ipynb`.
 - Store HTML reports within the corresponding competition directory. Choose report subdirectories and naming conventions when implementing publishing.
 
+## Development Environment
+
+- Use the official `gcr.io/kaggle-gpu-images/python` image as the Dev Container base and pin a tested version or digest.
+- Use the Python and scientific packages supplied by that image. Manage additional development tools explicitly and preserve compatibility with the base environment.
+- Define the VS Code container configuration in `.devcontainer/` and track it with Git.
+- Mount the local repository into the container so edits persist on the development machine.
+- Configure the Python and Jupyter extensions for the container environment.
+- Run development tools and HTML export inside the container.
+- On Windows, verify Docker GPU access through the WSL2 backend and the NVIDIA driver before relying on local GPU execution.
+- Validate container startup, Python imports, and local GPU access on the Windows machine.
+- Select the remote Kaggle Jupyter kernel when executing with Kaggle server resources. Confirm the selected kernel before running a notebook.
+- Record the Python and relevant package versions for reproducibility. Verify local and remote environments independently.
+
 ## Development and Version Control
 
 - Treat notebooks in the local repository as the source of truth.
-- Mount the local repository into a VS Code Dev Container so edits are saved to the Mac's project files.
-- Run development tools, Python tooling, and HTML export inside the Dev Container.
-- Run Git operations, including commit, push, and pull, from the Mac terminal using the Mac's GitHub authentication.
+- Run commit, push, and pull operations from the development machine using its GitHub authentication. Choose the Windows or WSL Git environment during setup.
 - Apply fixes and improvements discovered during Kaggle execution to the local source.
 - Track code and Markdown in `.ipynb` files. In the committed version, code-cell `outputs` must be an empty array and `execution_count` must be `null`.
+- Configure output stripping as a Git filter in the environment that runs Git. Its executable must be available in that environment, including after a fresh clone.
+- Keep outputs in the working notebook for inspection and HTML export while stripping them from the Git version.
 - Preserve execution results in HTML reports.
-
-## Development Environment
-
-- Define the development environment in `.devcontainer/` and track its configuration with Git.
-- Pin the selected base image version and record additional development dependencies in reproducible configuration.
-- Configure the Python and Jupyter VS Code extensions for the container environment.
-- The local container uses the Mac's compute resources. Select the Kaggle remote kernel for notebook execution on Kaggle resources.
-- Verify the remote connection from the VS Code Dev Container with a small notebook before relying on it for competition work.
-- Configure notebook output stripping as a Git filter on the Mac. Its executable must be available to the Mac's Git process.
-- Keep outputs available in the working notebook for inspection and HTML export while stripping them from the Git version.
-- Ignore virtual environments, caches, notebook checkpoints, credentials, downloaded data, model files, and temporary execution artifacts. Track HTML reports and any resources they require.
+- Ignore environments, caches, notebook checkpoints, credentials, downloaded data, models, and temporary execution artifacts. Track HTML reports and their required resources.
 
 ## Execution and Competition Submission
 
-1. Open the local repository in a VS Code Dev Container and develop the notebook.
-2. Connect VS Code's notebook editor to a Kaggle remote Jupyter kernel.
-3. Execute with Kaggle server resources and inspect the results.
-4. Save the executed notebook to the mounted repository and export it to HTML with cell outputs included using the container's export tools.
-5. Stage changes with Git on the Mac and verify that the Git filter removes cell outputs and execution counts from the staged `.ipynb`.
-6. Commit the notebook source and HTML report on the Mac, then push to GitHub.
+1. Open the local repository in the Kaggle GPU Dev Container and develop the notebook.
+2. Select the intended kernel. Connect to the remote Kaggle Jupyter server for execution on Kaggle resources.
+3. Execute the notebook and inspect the results.
+4. Save the executed notebook to the mounted repository and export it to HTML with cell outputs included.
+5. Stage changes using host-side Git and verify that notebook outputs and execution counts are stripped from the staged version.
+6. Commit the notebook source and HTML report, then push to GitHub.
 7. Publish the HTML report through GitHub Pages and submit competition entries on Kaggle.
 
-Account for Kaggle data paths, required packages, and accelerator settings. Record execution requirements and reproducibility details in notebook code or Markdown.
+Account for data paths, attached datasets, required packages, and accelerator settings. Code executed on the remote Kaggle kernel reads files from the Kaggle server filesystem. Record execution requirements in notebook code or Markdown.
 
 ## HTML Reports
 
 - Include relevant tables, plots, text output, and training logs in HTML reports.
 - Track HTML reports with Git and publish them through GitHub Pages.
 - Export HTML from the working notebook with outputs available.
-- If a report references external images or files, verify that those resources remain accessible after publishing.
-- When updating a report, verify that it corresponds to the accompanying notebook source.
+- Verify that referenced images and files remain accessible after publishing.
+- Verify that each updated report corresponds to the accompanying notebook source.
 
-## Pending Setup and Verification
+## Handoff Status
 
-This document defines the agreed workflow. The following setup tasks remain to be implemented and verified.
+- Work is on branch `setup/dev-container-workflow`.
+- The initial workflow documentation and the Dev Container decision have been committed.
+- The earlier Microsoft Python image configuration, uv project files, ignore rules, and helper scripts were discarded when switching to the official Kaggle GPU image.
+- The temporary Mac-side notebook Git filter and the nbstripout tool installed for it were removed.
+- Official GPU image metadata was checked for `latest`, `v173`, and `v172`. All three reported `linux/amd64`.
+- The previous Mac used ARM64. A small AMD64 Alpine container ran successfully under emulation, but the Kaggle image itself was never downloaded or launched.
+- Remote Kaggle connection verification was explicitly deferred by the user.
+- The repository currently contains workflow documentation. Container, output filtering, HTML export, and Pages setup remain to be implemented.
 
-- The Dev Container base image, development tools, and VS Code configuration
-- The connection method between VS Code inside the Dev Container and a Kaggle Jupyter kernel
-- The Mac-side notebook output Git filter and its installation procedure
-- Repository ignore rules
-- The HTML export tool and command
-- GitHub Pages publishing paths and deployment method
+## Next Steps on Windows
 
-When implementing these steps, verify the available connection methods and update this document with tested settings and commands.
+1. Verify the NVIDIA driver, WSL2, Docker GPU access, and the VS Code Dev Containers extension.
+2. Configure the official Kaggle GPU image as the Dev Container base. Verify startup, Python imports, and GPU access.
+3. Add repository ignore rules and host-side notebook output filtering. Test that working outputs remain available and committed outputs are removed.
+4. Configure and test HTML export with tables and plots.
+5. Verify the Kaggle remote connection when the user is ready. Start a Kaggle session, open `Run > Kaggle Jupyter Server`, and use the `VS Code Compatible URL` in VS Code's remote Jupyter server picker.
+6. Choose HTML report paths and configure GitHub Pages deployment.
+7. Update these instructions with the commands and settings actually tested.
+
+## References
+
+- [Official Kaggle Python images](https://github.com/Kaggle/docker-python)
+- [Kaggle notebook and Jupyter server documentation](https://www.kaggle.com/docs/notebooks)
+- [VS Code Dev Containers](https://code.visualstudio.com/docs/devcontainers/containers)
+- [Docker Desktop GPU support on Windows](https://docs.docker.com/desktop/features/gpu/)

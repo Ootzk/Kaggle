@@ -61,6 +61,7 @@ Account for data paths, attached datasets, required packages, and accelerator se
 - The initial workflow documentation and the Dev Container decision have been committed.
 - Remote Kaggle connection verification was explicitly deferred by the user.
 - Use Windows Git for this checkout.
+- `.gitignore` excludes local environments, caches, credentials, and designated data/artifact directories at the root and directly inside each competition. Keep HTML reports and resources outside those directories. `.gitattributes` uses LF for text and CRLF for Windows command scripts; notebook output filtering is still pending.
 - `.devcontainer/devcontainer.json` now pins the official GPU `v172` image by digest, mounts the local repository, requests GPU access, and configures Python/Jupyter extensions without changing the image's scientific packages.
 - `.devcontainer/verify_environment.py` records package versions and checks a real PyTorch CUDA operation. Run it inside the container before claiming the image is tested.
 - `.devcontainer/validate.ps1` starts the configured container with the installed VS Code Dev Containers CLI and runs the Python check. Host-only logs and current status are in `.git/kaggle-devcontainer/`. Check them before starting another validation process.
@@ -72,7 +73,7 @@ Account for data paths, attached datasets, required packages, and accelerator se
 
 1. Verify the NVIDIA driver, WSL2, Docker GPU access, and the VS Code Dev Containers extension.
 2. Configure the official Kaggle GPU image as the Dev Container base. Verify startup, Python imports, and GPU access.
-3. Add repository ignore rules and host-side notebook output filtering. Test that working outputs remain available and committed outputs are removed.
+3. Configure host-side notebook output filtering. Test that working outputs remain available and committed outputs are removed.
 4. Configure and test HTML export with tables and plots.
 5. Verify the Kaggle remote connection when the user is ready. Start a Kaggle session, open `Run > Kaggle Jupyter Server`, and use the `VS Code Compatible URL` in VS Code's remote Jupyter server picker.
 6. Choose HTML report paths and configure GitHub Pages deployment.

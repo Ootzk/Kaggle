@@ -90,7 +90,7 @@ Keep machine-specific hardware details, resource allocations, installed host-too
 
 ## Remaining workflow work
 
-- Add ignore rules and install an output-stripping Git filter in Windows Git, including a fresh-clone setup command and an index-content check.
+- Install an output-stripping Git filter in Windows Git, including a fresh-clone setup command and an index-content check. Ignore rules and cross-platform line endings are configured; see the README for local data/artifact directory conventions.
 - Export executed notebooks to HTML inside the container and verify tables, plots, logs, and required resources.
 - Choose competition report paths and configure GitHub Pages deployment.
 - Verify the remote Kaggle connection when requested and record its environment independently.

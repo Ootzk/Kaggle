@@ -1,0 +1,7 @@
+# Use LF for text in Git and in Windows/Linux working trees.
+* text=auto eol=lf
+*.ipynb text eol=lf
+
+# Windows command scripts require CRLF in the working tree.
+*.bat text eol=crlf
+*.cmd text eol=crlf

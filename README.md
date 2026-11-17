@@ -16,6 +16,10 @@ Git tracks notebook code and Markdown with cell outputs and execution counts str
 
 Each competition has a directory at the repository root, named after its Kaggle competition slug. The directory contains its notebooks and HTML reports.
 
+Store local data in `data/`, `datasets/`, or `input/`, and generated files in `output/`, `working/`, `models/`, `checkpoints/`, `submissions/`, `logs/`, `runs/`, `tmp/`, or `temp/`. These directories are ignored at the repository root and directly inside each competition. Keep HTML reports and their resources outside these directories so Git can track them. Data and model file extensions are not ignored globally; use the designated directories.
+
+Environment files and credentials are ignored; `.env.example` and `.env.template` remain trackable. Text files use LF across Windows and Linux, with CRLF for Windows `.bat` and `.cmd` scripts.
+
 ## Setup Status
 
 The Windows Dev Container configuration is in [`.devcontainer/devcontainer.json`](.devcontainer/devcontainer.json). It uses the official Kaggle GPU `v172` image pinned by digest, requests the NVIDIA GPU, and mounts this repository at `/workspaces/Kaggle`. It uses the image's Python environment without installing or upgrading scientific packages.

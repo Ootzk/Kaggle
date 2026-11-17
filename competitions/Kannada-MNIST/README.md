@@ -117,3 +117,40 @@ For code-competition submission, the notebook writes `/kaggle/working/submission
 `report.ipynb` describes all three methods and embeds one completed local run per experiment and the verified baseline v3, Mixed v1, and full-data v1 competition scores. Its tables and Plotly charts render without local training artifacts or authentication. Experimental validation uses local results only; Kaggle run validation results are excluded. The shared CNN is defined in code and summarized with the image-supplied `torchinfo`, including layer shapes and parameter counts; no additional visualization package is required. Queued/canceled runs are excluded. Mixed v1 scored public 0.96800 / private 0.96780; full-data v1 scored public 0.96120 / private 0.96420. The full-data fit did not improve on Mixed in this run; its training accuracy is not a validation metric. Update the report snapshot and provenance together when adding completed results.
 
 Experimental artifact directory names remain `output/baseline/` and `output/mixed/`; renaming the source notebooks does not rename or discard existing execution results. Existing Kaggle notebook slugs remain unchanged as well.
+
+
+## K-means pixel baseline
+
+`experiment-kmeans-pixels.ipynb` provides a CPU scikit-learn KMeans reference using 784 float32 pixels divided by 255. It fits centers on the same 48,000 TRAIN learning rows as the CNN baseline and maps clusters to the majority digit using those learning labels only. Both original held-out partitions remain excluded from fitting and mapping; no Dig-MNIST learning rows or competition test images are used for training.
+
+The fixed settings are K=10, k-means++ initialization, 50 independent k-means++ initializations with one fit per recorded seed, at most 300 Lloyd iterations per fit, tolerance 0.0001, master random seed 42, and one numerical thread. Generate 50 distinct seeds deterministically; select the smallest TRAIN-learning inertia, retaining the first run for exact ties. Store every run seed, inertia, and iteration count in `restart_history.csv`; held-out metrics are evaluated only after selecting the model. Lower inertia does not guarantee higher classification accuracy. No PCA, image alignment, augmentation, or hyperparameter search is used. The objective is squared Euclidean pixel distance. Training cluster purity and centroid distances are not calibrated probabilities.
+
+| Partition | Accuracy | Macro F1 |
+| --- | ---: | ---: |
+| TRAIN validation (12,000) | 74.1000% | 0.708511 |
+| Dig-MNIST validation (2,048) | 36.9141% | 0.332482 |
+
+Cluster diagnostics are ordered by mapped digit and then original cluster ID; display labels retain both. The notebook displays centroid and empirical mean/variance images, cluster membership sizes, digit counts and proportions (including a 0–9 distribution panel for each cluster), a statistics table, squared-distance box plots and normalized histograms, held-out confusion matrices, overall/per-digit metric legends, and seeded error examples with Kannada numerals. Two clusters map to digit 2 and none to 7 in this run; cluster IDs are not digit labels and the mapping need not be one-to-one.
+
+Ignored artifacts are saved under `output/experiment-kmeans-pixels/`: the fitted model and mapping, split/run manifests, evaluation tables, error examples, and experimental test predictions. `experiment-kmeans-pixels.kaggle.json` defines a separate private CPU notebook with internet disabled and the competition attached. It has not been pushed or submitted. HTML export/publication is deferred while the notebook is being developed; keep the execution outputs in the working notebook for inspection.
+
+
+The K-means notebook automatically reuses a matching local `model.joblib` cache. Its key includes the actual learning features/labels and row order, input CSV hash, preprocessing description, all initialization seeds, K-means parameters, NumPy/scikit-learn versions, and numerical-thread setting. Missing or mismatching caches trigger a fresh 50-run search. Set `FORCE_REFIT = True` in the fitting cell to force retraining. A cache hit still recomputes the label mapping, diagnostic plots, held-out evaluation, and test predictions; its recorded original training duration is distinct from the current load/fit duration.
+
+
+## Pixel overclustering comparison
+
+`experiment-kmeans-pixels-overclustered.ipynb` changes only K from 10 to 30 in the learning method. It keeps the same input representation, fixed TRAIN/Dig splits, 50 initialization seeds, per-run settings, and lowest-learning-inertia selection rule. Diagnostic layouts scale to the number of clusters. Artifacts and the reusable model cache are isolated under `output/experiment-kmeans-pixels-overclustered/`; the K=10 model is preserved. The matching `.kaggle.json` remains private, CPU-only, and internet-disabled, and has not been pushed.
+
+| Measurement | K=10 | K=30 |
+| --- | ---: | ---: |
+| Validation: accuracy | 74.1000% | 89.7583% |
+| Validation: macro F1 | 0.708511 | 0.895940 |
+| Validation: digit 7 recall | 0.0000% | 59.5000% |
+| Dig-MNIST validation: accuracy | 36.9141% | 55.9082% |
+| Dig-MNIST validation: macro F1 | 0.332482 | 0.545479 |
+| Dig-MNIST validation: digit 7 recall | 0.0000% | 21.9512% |
+| Clusters mapped to digit 7 | 0 | 2 |
+| Distinct mapped digits | 9 | 10 |
+
+Three clusters per category is the capacity ratio in this first comparison, not a universal rule and not an enforced mapping count. The objective can fall when K increases even if classification does not improve. Check held-out accuracy, macro F1, mapped-digit coverage, and per-digit recall together. HTML export/publication remains deferred.

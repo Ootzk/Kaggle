@@ -9,6 +9,8 @@ Use lowercase words separated by hyphens for notebook names. Competition directo
 | Final training and prediction | `submission-<model>.ipynb` | `submission-cnn.ipynb` |
 | Consolidated methods and results | `report.ipynb` | `report.ipynb` |
 
+Each experiment notebook documents its own method, settings, diagnostics, and observed results. Keep cross-experiment tables, graphs, and interpretations in `report.ipynb`, and link to that report from individual notebooks rather than duplicating comparisons.
+
 Use a recognizable model name such as `cnn`, `kmeans`, or `catboost`. The variant identifies the experimental condition, such as `baseline`, `mixed`, `pixels`, or `pca`. Record exact epochs, random seeds, cluster counts, and other settings inside the notebook rather than encoding each parameter in its filename. Add a descriptive variant to a submission name only when separate submission pipelines need to coexist.
 
 For example, a future K-means comparison can use `experiment-kmeans-pixels.ipynb` and `experiment-kmeans-pca.ipynb`. These names do not imply that those notebooks already exist.

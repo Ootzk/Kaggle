@@ -80,14 +80,9 @@ Compare both models using the exact same validation rows from each source. Dig-M
 
 Artifacts go to separate `output/baseline/` and `output/mixed/` directories. Mixed still has more batches per epoch, so equal epochs do not mean equal optimizer updates. Neither notebook trains on competition test images or submits predictions automatically.
 
-### Local comparison with shared holdouts
+### Consolidated results
 
-| Model | TRAIN validation accuracy | Dig validation accuracy |
-| --- | ---: | ---: |
-| Baseline | 99.2667% | 72.4609% |
-| Mixed | 99.3583% | 94.8242% |
-
-Both runs use ten epochs and the same held-out row positions. Earlier experiments evaluating all Dig images are superseded by this comparison.
+See [report.ipynb](report.ipynb) for cross-experiment result tables, graphs, and interpretation. Individual experiment notebooks document their own configuration, diagnostics, and observed properties.
 
 ## Remote exploration
 
@@ -114,14 +109,14 @@ For code-competition submission, the notebook writes `/kaggle/working/submission
 
 `submission-cnn.kaggle.json` defines a separate private GPU notebook with internet disabled. Package it as `kernel-metadata.json` with `submission-cnn.ipynb` only when intentionally starting a remote run. Creating this notebook does not push, run, or submit it on Kaggle.
 
-`report.ipynb` describes all three methods and embeds one completed local run per experiment and the verified baseline v3, Mixed v1, and full-data v1 competition scores. Its tables and Plotly charts render without local training artifacts or authentication. Experimental validation uses local results only; Kaggle run validation results are excluded. The shared CNN is defined in code and summarized with the image-supplied `torchinfo`, including layer shapes and parameter counts; no additional visualization package is required. Queued/canceled runs are excluded. Mixed v1 scored public 0.96800 / private 0.96780; full-data v1 scored public 0.96120 / private 0.96420. The full-data fit did not improve on Mixed in this run; its training accuracy is not a validation metric. Update the report snapshot and provenance together when adding completed results.
+`report.ipynb` describes the CNN and K-means methods and embeds one completed local run per experiment and the verified baseline v3, Mixed v1, and full-data v1 competition scores. Its tables and Plotly charts render without local training artifacts or authentication. Experimental validation uses local results only; Kaggle run validation results are excluded. The shared CNN is defined in code and summarized with the image-supplied `torchinfo`, including layer shapes and parameter counts; no additional visualization package is required. Queued/canceled runs are excluded. Mixed v1 scored public 0.96800 / private 0.96780; full-data v1 scored public 0.96120 / private 0.96420. The full-data fit did not improve on Mixed in this run; its training accuracy is not a validation metric. Update the report snapshot and provenance together when adding completed results.
 
 Experimental artifact directory names remain `output/baseline/` and `output/mixed/`; renaming the source notebooks does not rename or discard existing execution results. Existing Kaggle notebook slugs remain unchanged as well.
 
 
 ## K-means pixel baseline
 
-`experiment-kmeans-pixels.ipynb` provides a CPU scikit-learn KMeans reference using 784 float32 pixels divided by 255. It fits centers on the same 48,000 TRAIN learning rows as the CNN baseline and maps clusters to the majority digit using those learning labels only. Both original held-out partitions remain excluded from fitting and mapping; no Dig-MNIST learning rows or competition test images are used for training.
+`experiment-kmeans-pixels.ipynb` provides a CPU scikit-learn KMeans reference using 784 float32 pixels divided by 255. It fits centers on 48,000 TRAIN learning rows and maps clusters to the majority digit using those learning labels only. Both original held-out partitions remain excluded from fitting and mapping; no Dig-MNIST learning rows or competition test images are used for training.
 
 The fixed settings are K=10, k-means++ initialization, 50 independent k-means++ initializations with one fit per recorded seed, at most 300 Lloyd iterations per fit, tolerance 0.0001, master random seed 42, and one numerical thread. Generate 50 distinct seeds deterministically; select the smallest TRAIN-learning inertia, retaining the first run for exact ties. Store every run seed, inertia, and iteration count in `restart_history.csv`; held-out metrics are evaluated only after selecting the model. Lower inertia does not guarantee higher classification accuracy. No PCA, image alignment, augmentation, or hyperparameter search is used. The objective is squared Euclidean pixel distance. Training cluster purity and centroid distances are not calibrated probabilities.
 
@@ -138,19 +133,14 @@ Ignored artifacts are saved under `output/experiment-kmeans-pixels/`: the fitted
 The K-means notebook automatically reuses a matching local `model.joblib` cache. Its key includes the actual learning features/labels and row order, input CSV hash, preprocessing description, all initialization seeds, K-means parameters, NumPy/scikit-learn versions, and numerical-thread setting. Missing or mismatching caches trigger a fresh 50-run search. Set `FORCE_REFIT = True` in the fitting cell to force retraining. A cache hit still recomputes the label mapping, diagnostic plots, held-out evaluation, and test predictions; its recorded original training duration is distinct from the current load/fit duration.
 
 
-## Pixel overclustering comparison
+## Pixel overclustering
 
-`experiment-kmeans-pixels-overclustered.ipynb` changes only K from 10 to 30 in the learning method. It keeps the same input representation, fixed TRAIN/Dig splits, 50 initialization seeds, per-run settings, and lowest-learning-inertia selection rule. Diagnostic layouts scale to the number of clusters. Artifacts and the reusable model cache are isolated under `output/experiment-kmeans-pixels-overclustered/`; the K=10 model is preserved. The matching `.kaggle.json` remains private, CPU-only, and internet-disabled, and has not been pushed.
+`experiment-kmeans-pixels-overclustered.ipynb` fits K=30 centers on 48,000 TRAIN learning images, using normalized pixels, 50 fixed-seed initializations, and learning-inertia selection. It describes the selected model's mapped-digit coverage, class distributions, pixel statistics, and held-out results. Artifacts and the reusable cache are isolated under `output/experiment-kmeans-pixels-overclustered/`. The matching `.kaggle.json` is private, CPU-only, and internet-disabled.
 
-| Measurement | K=10 | K=30 |
-| --- | ---: | ---: |
-| Validation: accuracy | 74.1000% | 89.7583% |
-| Validation: macro F1 | 0.708511 | 0.895940 |
-| Validation: digit 7 recall | 0.0000% | 59.5000% |
-| Dig-MNIST validation: accuracy | 36.9141% | 55.9082% |
-| Dig-MNIST validation: macro F1 | 0.332482 | 0.545479 |
-| Dig-MNIST validation: digit 7 recall | 0.0000% | 21.9512% |
-| Clusters mapped to digit 7 | 0 | 2 |
-| Distinct mapped digits | 9 | 10 |
+## Mixed-data pixel overclustering
 
-Three clusters per category is the capacity ratio in this first comparison, not a universal rule and not an enforced mapping count. The objective can fall when K increases even if classification does not improve. Check held-out accuracy, macro F1, mapped-digit coverage, and per-digit recall together. HTML export/publication remains deferred.
+`experiment-kmeans-pixels-overclustered-mixed.ipynb` fits K=30 centers and the majority-label mapping on 56,192 images: 48,000 TRAIN learning rows followed by 8,192 Dig learning rows. The 12,000 TRAIN validation and 2,048 Dig validation rows are excluded. It uses normalized pixels, 50 fixed-seed initializations, learning-inertia selection, and no PCA, reweighting, or cluster-size constraint.
+
+Artifacts and the matching-model cache live under `output/experiment-kmeans-pixels-overclustered-mixed/`. The key includes both CSV hashes, learning-row orders, and the combined features/labels. Its matching `.kaggle.json` defines a private CPU notebook with internet disabled. The notebook describes its own mixed-data clusters and held-out results.
+
+K-means notebooks have not been pushed to Kaggle. Cross-experiment comparisons, including the K=10→30 change and Dig learning-data effect, are maintained in [report.ipynb](report.ipynb). The report embeds completed local snapshots and separately records confirmed CNN competition scores; it runs without ignored local artifacts. HTML export/publication remains deferred during development.

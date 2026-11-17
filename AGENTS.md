@@ -37,6 +37,7 @@ This repository tracks Kaggle notebook source and HTML execution reports. Develo
 ## Notebook development and Git
 
 - Treat local notebooks as the source of truth. Apply improvements discovered during remote execution to local source.
+- Keep each experiment notebook focused on its own method and results. Consolidate comparisons between experiments in the competition's `report.ipynb`.
 - Run notebook development, export, staging, commits, pulls, and pushes inside the Dev Container. Use VS Code forwarding of the host credential helper or SSH agent; never bake credentials into the image or repository.
 - `postStartCommand` registers required notebook filters, diff/merge drivers, and local LFS configuration. `postAttachCommand` configures the live VS Code host credential proxy. CLI-only startup does not replace VS Code attachment for authentication checks.
 - Keep outputs in working notebooks for inspection and export. Every indexed/committed code cell must have `outputs: []` and `execution_count: null`.

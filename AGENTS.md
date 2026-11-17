@@ -69,7 +69,7 @@ Account for data paths, attached datasets, required packages, and accelerator se
 - `.devcontainer/verify_environment.py` records package versions and checks a real PyTorch CUDA operation. Run it inside the container before claiming the image is tested.
 - `.devcontainer/validate.ps1` starts the configured container with the installed VS Code Dev Containers CLI and runs the Python check. Host-only logs and current status are in `.git/kaggle-devcontainer/`. Check them before starting another validation process.
 - NVIDIA GPU visibility was verified on Windows, in WSL2, and in a CUDA container using `--gpus all`.
-- The Kaggle image pull and runtime checks are in progress. See `docs/windows-setup.md` for commands and the validation record; do not infer container startup or package compatibility from configuration syntax checks.
+- The pinned Kaggle GPU image downloaded successfully. Dev Container CLI startup, the workspace bind mount, scientific/notebook imports, and an actual PyTorch CUDA computation passed. The configured interpreter is `/usr/bin/python3`. See `docs/windows-setup.md` and untracked local validation logs for evidence. VS Code UI startup, extensions, and notebook kernel selection remain to be checked interactively.
 - HTML export and Pages setup remain to be implemented. Remote Kaggle verification remains deferred.
 
 ## Next Steps on Windows

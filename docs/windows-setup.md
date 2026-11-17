@@ -99,7 +99,7 @@ Registry metadata identifies it as `linux/amd64` with CUDA 12.8.1. Its compresse
 
 1. Open this repository in VS Code on Windows.
 2. Run **Dev Containers: Reopen in Container**. The first pull is large.
-3. Confirm that the workspace is `/workspaces/Kaggle` and Python points to `/usr/local/bin/python`.
+3. Confirm that the workspace is `/workspaces/Kaggle` and Python points to `/usr/bin/python3`. The image's `python` command is a wrapper that delegates to this interpreter.
 4. In the container terminal, run:
 
    ```bash
@@ -141,7 +141,8 @@ Get-Content .git/kaggle-devcontainer/up.log -Tail 10
 
 - NVIDIA GPU visibility was verified on Windows, in WSL2, and in a CUDA container.
 - Dev Container JSON and the validation scripts' Python/PowerShell syntax passed host checks. The Dev Containers CLI successfully resolved the configuration and workspace bind mount.
-- The image pull and host validation helper were started. Check local logs for their current status; Kaggle imports, CUDA computation, and Dev Container CLI startup remain unconfirmed in shared documentation. VS Code UI startup and kernel selection have not been tested.
+- The pinned Kaggle GPU image downloaded successfully. Dev Container CLI startup, the workspace bind mount, scientific/notebook package imports, and an actual PyTorch CUDA computation passed. The interpreter is `/usr/bin/python3`; detailed versions and diagnostics are in `.git/kaggle-devcontainer/environment.json`.
+- VS Code UI startup, extension availability, and notebook kernel selection remain to be checked interactively. Remote Kaggle connection verification remains deferred.
 
 Keep machine-specific hardware details, resource allocations, installed host-tool versions, and troubleshooting logs in untracked local diagnostics. Shared documentation describes the Windows + NVIDIA GPU workflow and reproducible container configuration.
 

@@ -57,7 +57,7 @@ The check stages an executed fixture with a temporary index, verifies empty outp
 Do not use `keep_output` or `init_cell` metadata/tags. Before committing, inspect the actual index:
 
 ```bash
-git show :competition-slug/notebook.ipynb
+git show :competitions/competition-slug/notebook.ipynb
 ```
 
 Every committed code cell must have `outputs: []` and `execution_count: null`. Working notebook outputs remain available for inspection and HTML export.
@@ -65,7 +65,7 @@ Every committed code cell must have `outputs: []` and `execution_count: null`. W
 For optional browser-based review or conflict resolution inside the container:
 
 ```bash
-sh .devcontainer/git-tools.sh nbdiff-web HEAD -- competition-slug/notebook.ipynb
+sh .devcontainer/git-tools.sh nbdiff-web HEAD -- competitions/competition-slug/notebook.ipynb
 git mergetool --tool nbdime -- '*.ipynb'
 ```
 
@@ -166,9 +166,9 @@ The CPU quota divided by its period gives the CPU allowance; `max` means unlimit
 
 ## Execution and publication
 
-Run [Digit Recognizer](../digit-recognizer/README.md) locally first, then on a remote Kaggle GPU kernel. Remote execution reads the Kaggle server filesystem, independently of the Ubuntu container mount. Attach the competition data and confirm the remote environment and accelerator settings. Do not commit connection URLs or tokens.
+Run [Digit Recognizer](../competitions/digit-recognizer/README.md) locally first, then on a remote Kaggle GPU kernel. Remote execution reads the Kaggle server filesystem, independently of the Ubuntu container mount. Attach the competition data and confirm the remote environment and accelerator settings. Do not commit connection URLs or tokens.
 
-HTML export follows both execution checks. Export inside the container from a working notebook with outputs, verify tables/plots/logs and referenced resources, and keep reports outside ignored artifact directories. Report paths and GitHub Pages deployment remain to be implemented.
+HTML export follows both execution checks. Export inside the container from a working notebook with outputs, verify tables/plots/logs and referenced resources, and keep reports outside ignored artifact directories. Reports live in `reports/<competition>/`; use the [report publishing workflow](report-publishing.md) to export, preview, and deploy.
 
 ## Validation status
 
@@ -176,7 +176,7 @@ Ubuntu host Docker, the NVIDIA driver, and NVIDIA Container Toolkit are availabl
 
 The official Kaggle GPU `latest` image download and Dev Container build/startup passed on Ubuntu. The configured interpreter `/usr/bin/python3`, non-root workspace writes with matching host ownership, scientific/notebook imports, and a real PyTorch CUDA computation passed. Effective CPU, memory, and swap limits matched the configuration. Resolved image digests and detailed diagnostics remain in `.git/kaggle-devcontainer/`. Repeat validation after updating `latest`.
 
-Container notebook Git checks passed: actual staging stripped outputs while preserving working outputs and the original index, notebook diff and semantic merge succeeded, and fresh-repository registration was idempotent. Scientific package versions matched the pre-build environment and CUDA computation passed. VS Code configured its host credential proxy during attachment; the attached container passed an authenticated GitHub `/user` request with `python .devcontainer/verify_git_auth.py`. The local Jupyter `python3` kernel executed the Digit Recognizer environment cell using `/usr/bin/python3` and passed CUDA computation. Detailed kernel output stays in `.git/kaggle-devcontainer/local-kernel-check.ipynb`. VS Code notebook kernel selection remains an interactive check. The working baseline notebook completed all local cells without errors, including three training epochs and submission generation. Final validation accuracy was 0.971547619047619; the ignored data directory contains the competition CSVs. Set `KAGGLE_API_TOKEN` in the ignored repository-root `.env`, following `.env.example`, then rerun the data preparation cell. Remote Kaggle execution, HTML export, and Pages configuration remain pending.
+Container notebook Git checks passed: actual staging stripped outputs while preserving working outputs and the original index, notebook diff and semantic merge succeeded, and fresh-repository registration was idempotent. Scientific package versions matched the pre-build environment and CUDA computation passed. VS Code configured its host credential proxy during attachment; the attached container passed an authenticated GitHub `/user` request with `python .devcontainer/verify_git_auth.py`. The local Jupyter `python3` kernel executed the Digit Recognizer environment cell using `/usr/bin/python3` and passed CUDA computation. Detailed kernel output stays in `.git/kaggle-devcontainer/local-kernel-check.ipynb`. VS Code notebook kernel selection remains an interactive check. The working baseline notebook completed all local cells without errors, including five training epochs and submission generation. Final local validation accuracy was 0.9803571428571428; the ignored data directory contains the competition CSVs. Set `KAGGLE_API_TOKEN` in the ignored repository-root `.env`, following `.env.example`, then rerun the data preparation cell. Kaggle GPU notebook v2 completed and its competition submission scored 0.97778. HTML export and Pages deployment use the report publishing workflow.
 
 ## Official references
 

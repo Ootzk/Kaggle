@@ -40,7 +40,7 @@ def main():
         relative = fixture.relative_to(root).as_posix()
         git("read-tree", "HEAD")
         # Run from a subdirectory, like Git operations launched outside the root.
-        git("add", "--force", "--", str(fixture), cwd=root / "digit-recognizer")
+        git("add", "--force", "--", str(fixture), cwd=root / "competitions" / "digit-recognizer")
         staged = json.loads(git("show", ":" + relative))
         assert [c["source"] for c in staged["cells"]] == [c["source"] for c in notebook["cells"]]
         assert all(c["outputs"] == [] and c["execution_count"] is None for c in staged["cells"])
@@ -50,7 +50,7 @@ def main():
         modified = copy.deepcopy(notebook)
         modified["cells"][0]["source"] = ["x = 2\n"]
         fixture.write_text(json.dumps(modified))
-        diff = git("diff", "--", str(fixture), cwd=root / "digit-recognizer")
+        diff = git("diff", "--", str(fixture), cwd=root / "competitions" / "digit-recognizer")
         assert "nbdiff" in diff and "x = 2" in diff
 
         # Execute the configured merge command on independent cell edits.

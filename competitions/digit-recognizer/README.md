@@ -41,3 +41,9 @@ subprocess.run(
 ```
 
 An upload can use `kaggle kernels push -p .git/kaggle-devcontainer/kernel-push` after refreshing that package from the intended clean Git commit. Confirm `is_private: true` in its metadata before uploading. Download generated artifacts into an ignored output directory; never overwrite the local notebook source with remote code automatically.
+
+## Published report
+
+Notebook source lives in `competitions/digit-recognizer/`; saved local data and outputs stay in its ignored `data/` and `output/` folders. Exported HTML and its source manifest live in `reports/digit-recognizer/`.
+
+From the repository root, run `/usr/bin/python3 scripts/export_report.py competitions/digit-recognizer/baseline.ipynb` after saving outputs. Follow [report publishing](../../docs/report-publishing.md) for preview and deployment. Export does not execute training.

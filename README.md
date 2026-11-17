@@ -28,8 +28,8 @@ The image deliberately follows `latest`. Pull it before rebuilding to adopt an u
 
 ## Organization and status
 
-Each competition has a directory named after its Kaggle URL slug. Store notebooks and HTML reports there. Put local data in `data/`, `datasets/`, or `input/`, and generated artifacts in the ignored `output/`, `working/`, `models/`, `checkpoints/`, `submissions/`, `logs/`, `runs/`, `tmp/`, or `temp/` directories at the root or directly within a competition. Keep HTML reports and required resources outside those ignored directories.
+Store notebook source in `competitions/<competition-slug>/` and HTML reports in `reports/<competition-slug>/`. Competition slugs follow their Kaggle URLs. Put local data in `data/`, `datasets/`, or `input/`, and generated artifacts in the ignored `output/`, `working/`, `models/`, `checkpoints/`, `submissions/`, `logs/`, `runs/`, `tmp/`, or `temp/` directories at the root or directly within a competition. Keep HTML reports and required resources outside those ignored directories.
 
 Credentials, environments, and caches are ignored. `.env.example` and `.env.template` remain trackable.
 
-The [Digit Recognizer baseline](digit-recognizer/README.md) is ready for local and remote GPU execution checks. Complete those in that order before HTML export and GitHub Pages setup. See [AGENTS.md](AGENTS.md) for project guidelines and handoff status.
+The [Digit Recognizer baseline](competitions/digit-recognizer/README.md) has completed local and Kaggle GPU execution. Its [HTML report](reports/digit-recognizer/baseline.html) preserves local outputs. See [report publishing](docs/report-publishing.md) for export, preview, and Pages deployment. See [AGENTS.md](AGENTS.md) for project guidelines and handoff status.

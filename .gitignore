@@ -55,3 +55,17 @@ credentials.json
 .DS_Store
 Thumbs.db
 Desktop.ini
+
+# Competition-local data and execution artifacts in the source tree.
+/competitions/*/data/
+/competitions/*/datasets/
+/competitions/*/input/
+/competitions/*/output/
+/competitions/*/working/
+/competitions/*/models/
+/competitions/*/checkpoints/
+/competitions/*/submissions/
+/competitions/*/logs/
+/competitions/*/runs/
+/competitions/*/tmp/
+/competitions/*/temp/

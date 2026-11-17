@@ -4,11 +4,11 @@ This repository tracks Kaggle notebook source and HTML execution reports with Gi
 
 ## Repository Structure
 
-- Create one directory per competition at the repository root.
+- Create one directory per competition under `competitions/`.
 - Use the competition slug from its Kaggle URL as the directory name.
 - Store all notebooks for a competition in its directory.
 - Use descriptive notebook names such as `eda.ipynb`, `baseline.ipynb`, and `train_catboost.ipynb`.
-- Store HTML reports within the corresponding competition directory. Choose report subdirectories and naming conventions when implementing publishing.
+- Store HTML reports under `reports/<competition-slug>/`, named after their notebook (for example `reports/digit-recognizer/baseline.html`).
 
 ## Development Environment
 
@@ -53,7 +53,9 @@ Account for data paths, attached datasets, required packages, and accelerator se
 - Track HTML reports with Git and publish them through GitHub Pages.
 - Export HTML from the working notebook with outputs available.
 - Verify that referenced images and files remain accessible after publishing.
-- Verify that each updated report corresponds to the accompanying notebook source.
+- Verify that each updated report corresponds to the accompanying notebook source. Export writes a sibling JSON manifest with source and HTML hashes; Pages build rejects stale pairs.
+- Publish only report HTML and the generated index. Never upload the repository root as a Pages artifact.
+- `scripts/export_report.py` uses the image Python without executing cells. `scripts/build_pages.py` uses the standard library and runs in Actions without GPU/scientific dependencies.
 
 ## Handoff Status
 
@@ -62,22 +64,22 @@ Account for data paths, attached datasets, required packages, and accelerator se
 - The user explicitly chose the official Kaggle GPU `latest` image. The Dev Container builds a thin image from it, adding a non-root `vscode` user and isolated Git tools without changing scientific packages. The `USER_UID`/`USER_GID` build arguments match the Ubuntu workspace owner; the validation helper supplies the host IDs through `KAGGLE_HOST_UID`/`KAGGLE_HOST_GID`. Automatic UID rewriting is disabled to avoid a redundant image build.
 - `.gitignore` excludes environments, caches, credentials, data, and generated artifacts. Keep HTML reports and their required resources outside ignored directories.
 - The Dockerfile pins `nbstripout`, `nbdime`, and the startup compatibility dependency `wrapt` in an isolated `/opt/kaggle-git-tools` environment. Host `.venv` and repository Python dependency manifests are not used. `postStartCommand` automatically registers required notebook Git filters and diff/merge drivers on fresh clones, recreations, and restarts. All Git work runs inside the container.
-- Do not use notebook or cell metadata/tags that retain outputs (`keep_output` or `init_cell`). Inspect indexed notebooks with `git show :competition-slug/notebook.ipynb` before committing: every code cell must have empty outputs and a null execution count.
+- Do not use notebook or cell metadata/tags that retain outputs (`keep_output` or `init_cell`). Inspect indexed notebooks with `git show :competitions/competition-slug/notebook.ipynb` before committing: every code cell must have empty outputs and a null execution count.
 - Notebook execution and HTML export use the Kaggle image's Python, independently of the Git tools environment. The configured interpreter is `/usr/bin/python3`; validate it after image updates.
 - `.devcontainer/setup-gpu.sh` installs NVIDIA Container Toolkit and configures its Docker runtime on Ubuntu with sudo. Docker restart is a separate host action because other containers may be running.
 - `.devcontainer/validate.sh` pulls the configured image, starts the Dev Container using the installed CLI or VS Code extension CLI, and runs `.devcontainer/verify_environment.py` as the development user. Host-only logs and status stay in `.git/kaggle-devcontainer/`; check them before launching another validation.
 - `.devcontainer/verify_git_workflow.py` verifies actual staging with a temporary index, working-output preservation, diff/merge tools, and fresh-repository registration without changing the real staging state.
 - `postAttachCommand` routes container Git credentials through the live VS Code host proxy. `.devcontainer/verify_git_auth.py` verifies HTTPS GitHub authentication without printing or storing credentials. CLI-only startup skips the attachment hook; attach VS Code before testing authentication.
 - The environment check records package versions, verifies non-root workspace writes, and performs a real PyTorch CUDA operation. Previous Windows verification is not evidence for Ubuntu or a newly pulled image.
-- Ubuntu validation passed: the official GPU `latest` image was downloaded; Dev Container build/startup, `/usr/bin/python3`, scientific/notebook imports, non-root workspace writes with host ownership, actual PyTorch CUDA computation, and configured CPU/memory/swap limits were verified. The resolved image digest and detailed diagnostics are in `.git/kaggle-devcontainer/`. Container notebook Git staging/output preservation, diff/merge, fresh-repository initialization, and preservation of the original staging entries passed. Scientific package versions were unchanged. VS Code configured the host credential proxy on attachment; an authenticated GitHub `/user` request from the attached container passed using `python .devcontainer/verify_git_auth.py`. The local Jupyter `python3` kernel executed the baseline environment cell with `/usr/bin/python3` and passed CUDA computation; VS Code notebook kernel selection still requires an interactive check. The working baseline notebook completed local execution through submission generation with no cell errors; final validation accuracy was 0.971547619047619. Local competition CSVs are present in the ignored data directory.
-- `digit-recognizer/baseline.ipynb` is the GPU baseline. Local execution with competition CSVs passed. Complete remote Kaggle GPU execution before HTML export and GitHub Pages setup. Confirm each kernel and record its environment independently.
+- Ubuntu validation passed: the official GPU `latest` image was downloaded; Dev Container build/startup, `/usr/bin/python3`, scientific/notebook imports, non-root workspace writes with host ownership, actual PyTorch CUDA computation, and configured CPU/memory/swap limits were verified. The resolved image digest and detailed diagnostics are in `.git/kaggle-devcontainer/`. Container notebook Git staging/output preservation, diff/merge, fresh-repository initialization, and preservation of the original staging entries passed. Scientific package versions were unchanged. VS Code configured the host credential proxy on attachment; an authenticated GitHub `/user` request from the attached container passed using `python .devcontainer/verify_git_auth.py`. The local Jupyter `python3` kernel executed the baseline environment cell with `/usr/bin/python3` and passed CUDA computation; VS Code notebook kernel selection still requires an interactive check. The working baseline notebook completed local execution through submission generation with no cell errors; final local validation accuracy after five epochs was 0.9803571428571428. Local competition CSVs are present in the ignored data directory.
+- `competitions/digit-recognizer/baseline.ipynb` is the GPU baseline. Local and Kaggle GPU execution passed. The Kaggle submission scored 0.97778. Export saved local outputs to `reports/digit-recognizer/baseline.html` using `scripts/export_report.py`; assemble Pages with `scripts/build_pages.py`. Confirm each kernel and record its environment independently.
 
 ## Next Steps on Ubuntu
 
 1. After image updates, pull `latest` and repeat Dev Container validation with `bash .devcontainer/validate.sh`. Before launching VS Code, export `KAGGLE_HOST_UID=$(id -u)` and `KAGGLE_HOST_GID=$(id -g)` so the build uses the host IDs; the validation helper sets these automatically.
 2. Check VS Code container extensions and choose the local Python kernel interactively.
 3. Run Digit Recognizer locally, then on the remote Kaggle GPU kernel. Connect using an active Kaggle session's VS Code compatible Jupyter server URL; never commit URLs or tokens.
-4. Export executed notebooks to HTML inside the container, choose report paths, and configure GitHub Pages deployment.
+4. Follow `docs/report-publishing.md` to export saved outputs inside the container, validate source/report hashes, and deploy only `reports/` HTML through GitHub Pages.
 5. Update these instructions with tested commands and evidence. Keep workstation-specific diagnostics in untracked local logs.
 
 ## References

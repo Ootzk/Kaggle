@@ -1,0 +1,43 @@
+name: Publish notebook reports
+
+on:
+  push:
+    branches: [main, setup/dev-container-workflow]
+    paths:
+      - 'reports/**'
+      - 'competitions/**/*.ipynb'
+      - 'scripts/report_common.py'
+      - 'scripts/build_pages.py'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 scripts/build_pages.py --output "$RUNNER_TEMP/pages"
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ runner.temp }}/pages
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+      - name: Deploy reports
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -86,3 +86,13 @@ git lfs fsck
 Stage an updated report with normal `git add`; LFS stores the HTML separately and commits a small pointer. The pre-push hook uploads its LFS object. Working files and the Pages artifact contain the full HTML. The Pages workflow hydrates LFS before assembling its artifact; it does not ask the branch-based Pages publisher to serve LFS pointers.
 
 This conversion does not rewrite history. HTML in older commits remains an ordinary Git blob; only this and later report revisions use LFS. Rebuild the Dev Container to adopt its declared Git LFS installation when recreating the environment.
+
+## Competition index
+
+The index groups reports by their `reports/<competition-slug>/` directory. Each competition appears once, with its image and title beside links such as Baseline and EDA. Additional exported reports appear under the same competition automatically; empty or invented report links are not shown.
+
+Optional `competitions/<competition-slug>/competition.json` supplies `title`, `url`, and `thumbnail_url`. Use public HTTPS links. Without this metadata, the first report title and the competition slug provide defaults. Missing or failed images show a text fallback.
+
+KaggleHub currently handles input resources, not competition thumbnail discovery. Digit Recognizer uses the public representative image advertised by its official competition page's `og:image` metadata. The index references that Kaggle-hosted image; it is not an input dataset download, and no Kaggle authentication is needed in Pages builds. Images are not available offline unless already cached; individual exported reports remain standalone. Keep all notebook input downloads in KaggleHub.
+
+Updating `competition.json` on `main` triggers the Pages workflow. Metadata-only index changes do not require notebook execution or HTML re-export.

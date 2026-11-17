@@ -7,6 +7,7 @@ on:
       - 'reports/**'
       - '.gitattributes'
       - 'competitions/**/*.ipynb'
+      - 'competitions/**/competition.json'
       - 'scripts/report_common.py'
       - 'scripts/build_pages.py'
       - '.github/workflows/pages.yml'

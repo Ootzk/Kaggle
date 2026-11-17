@@ -65,3 +65,9 @@ Public URLs:
 - [Digit Recognizer — Baseline](https://ootzk.github.io/Kaggle/digit-recognizer/baseline.html)
 
 Git preserves older HTML versions; the site shows the latest successful deployment.
+
+## Verified deployment
+
+The initial deployment from commit `95ad742` completed successfully in [GitHub Actions](https://github.com/Ootzk/Kaggle/actions/runs/44075475308). Both public URLs returned HTTP 200, and the served report matched the committed HTML byte-for-byte. Browser verification passed for all eight Plotly charts, grouped digit legend toggles, and the ten error-gallery captions, with no external resource requests or JavaScript errors. Local diagnostics and screenshots remain untracked under `.git/kaggle-devcontainer/`.
+
+The moved competition directory passed notebook Git staging/output-preservation and diff/merge verification. Local CSVs and outputs remain ignored and preserved under `competitions/digit-recognizer/`.

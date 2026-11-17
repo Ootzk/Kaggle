@@ -5,13 +5,13 @@
 ```text
 competitions/
   digit-recognizer/
-    baseline.ipynb
+    experiments-baseline.ipynb
     data/                  # ignored local competition data
     output/                # ignored generated files
 reports/
   digit-recognizer/
-    baseline.html          # tracked, includes local execution outputs
-    baseline.json          # tracked source/report identity
+    experiments-baseline.html          # tracked, includes local execution outputs
+    experiments-baseline.json          # tracked source/report identity
 ```
 
 HTML under `reports/` is tracked with Git LFS; the small JSON manifests remain regular Git files. The Dev Container installs checksum-verified Git LFS at the version declared in its Dockerfile and registers repository-local LFS filters and the pre-push hook on startup.
@@ -23,12 +23,16 @@ The notebook is the source of truth. Keep execution outputs in the working noteb
 Save the executed notebook, then run from the repository root:
 
 ```bash
-/usr/bin/python3 scripts/export_report.py competitions/digit-recognizer/baseline.ipynb
+/usr/bin/python3 scripts/export_report.py competitions/digit-recognizer/experiments-baseline.ipynb
 ```
 
 The command uses the Kaggle image's Python and existing packages. It does not run cells. It rejects unexecuted nonempty code cells and saved execution errors. It embeds images and the Plotly JavaScript runtime, replacing notebook-specific RequireJS wrappers so figures work in a standalone browser without a CDN. Chart hover and legends remain interactive.
 
-The adjacent JSON manifest records a digest of cell types and source, plus the HTML digest. It intentionally excludes outputs, execution counts, and transient notebook metadata. This lets a Pages build validate a report against the stripped notebook committed to Git. Hashes detect edits after export; they do not prove that saved outputs were produced by the current code. Rerun computational changes before exporting. Markdown-only edits can be exported without retraining.
+Exported HTML includes a **Show code** checkbox at the top, enabled by default. Turn it off to hide code inputs and cells without outputs while preserving Markdown, tables, logs, and charts. It works offline and does not modify the notebook or rerun any code. The control itself is omitted when printing.
+
+To hide an individual code cell's source in exported HTML while keeping its output, add `hide_input` to the cell's `metadata.tags`. The notebook retains its code and outputs; other code cells remain visible in HTML. For example, a model-summary cell can display only its generated table. This is an export setting, not a Git output-retention tag.
+
+The adjacent JSON manifest records a digest of cell types, source, and the export-relevant `hide_input` tag, plus the HTML digest. It intentionally excludes outputs, execution counts, and transient notebook metadata. Untagged notebooks retain their existing digests. This lets a Pages build validate a report against the stripped notebook committed to Git. Hashes detect edits after export; they do not prove that saved outputs were produced by the current code. Rerun computational changes before exporting. Markdown-only and `hide_input` tag edits can be exported without retraining.
 
 ## Preview and verify
 
@@ -42,8 +46,8 @@ After a clone or when a report appears as a short LFS pointer, run `git lfs pull
 ## Stage and commit
 
 ```bash
-git add competitions/digit-recognizer/baseline.ipynb reports/digit-recognizer/
-git show :competitions/digit-recognizer/baseline.ipynb
+git add competitions/digit-recognizer/experiments-baseline.ipynb reports/digit-recognizer/
+git show :competitions/digit-recognizer/experiments-baseline.ipynb
 git diff --cached --check
 ```
 
@@ -64,7 +68,7 @@ Only report HTML and the index are published; source files, JSON manifests, data
 Public URLs:
 
 - [Report index](https://ootzk.github.io/Kaggle/)
-- [Digit Recognizer — Baseline](https://ootzk.github.io/Kaggle/digit-recognizer/baseline.html)
+- [Digit Recognizer — Baseline](https://ootzk.github.io/Kaggle/digit-recognizer/experiments-baseline.html)
 
 Git preserves older HTML versions; the site shows the latest successful deployment.
 

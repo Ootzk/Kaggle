@@ -1,7 +1,7 @@
 {
   "id": "pocariblitz/digit-recognizer-gpu-baseline",
   "title": "Digit Recognizer GPU Baseline",
-  "code_file": "baseline.ipynb",
+  "code_file": "experiments-baseline.ipynb",
   "language": "python",
   "kernel_type": "notebook",
   "is_private": true,

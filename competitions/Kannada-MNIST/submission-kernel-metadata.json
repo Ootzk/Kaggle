@@ -1,0 +1,15 @@
+{
+  "id": "pocariblitz/kannada-mnist-submission",
+  "title": "Kannada MNIST Submission",
+  "code_file": "submission.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_internet": false,
+  "dataset_sources": [],
+  "competition_sources": [
+    "Kannada-MNIST"
+  ],
+  "kernel_sources": []
+}

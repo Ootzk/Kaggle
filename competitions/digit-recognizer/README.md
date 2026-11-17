@@ -6,12 +6,12 @@ A small PyTorch CNN trained for five epochs on a stratified 80/20 split with see
 
 - [Competition](https://www.kaggle.com/competitions/digit-recognizer)
 - [Data description](https://www.kaggle.com/competitions/digit-recognizer/data)
-- [Published baseline report](https://ootzk.github.io/Kaggle/digit-recognizer/baseline.html)
+- [Published baseline report](https://ootzk.github.io/Kaggle/digit-recognizer/experiments-baseline.html)
 - [Private Kaggle notebook](https://www.kaggle.com/code/pocariblitz/digit-recognizer-gpu-baseline)
 
 ## Local execution
 
-1. Open `baseline.ipynb` in the Kaggle GPU Dev Container and select `/usr/bin/python3`.
+1. Open `experiments-baseline.ipynb` in the Kaggle GPU Dev Container and select `/usr/bin/python3`.
 2. Configure `KAGGLE_API_TOKEN` in the repository-root `.env` using `.env.example`. Accept the competition rules if required.
 3. Run the environment cell and confirm CUDA computation succeeds.
 4. Run the remaining cells. Existing `data/train.csv` and `data/test.csv` are reused. Missing data is downloaded with `kagglehub.competition_download`; the returned directory is used to read the CSVs.
@@ -49,7 +49,7 @@ Generated files include `submission.csv`, `training_history.csv`, and `validatio
 Save outputs, then run from the repository root:
 
 ```bash
-/usr/bin/python3 scripts/export_report.py competitions/digit-recognizer/baseline.ipynb
+/usr/bin/python3 scripts/export_report.py competitions/digit-recognizer/experiments-baseline.ipynb
 ```
 
 The report and manifest go to `reports/digit-recognizer/`. Export does not execute cells. Follow [report publishing](../../docs/report-publishing.md) for preview, Git LFS, and `main`-only Pages deployment.

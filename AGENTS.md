@@ -5,8 +5,8 @@ This repository tracks Kaggle notebook source and HTML execution reports. Develo
 ## Repository structure
 
 - Store notebook source in `competitions/<competition-slug>/`. Use the slug from the Kaggle competition URL.
-- Use descriptive names such as `eda.ipynb`, `baseline.ipynb`, and `train_catboost.ipynb`.
-- Store report HTML and its JSON manifest in `reports/<competition-slug>/`, named after the notebook.
+- Follow `docs/notebook-naming.md`: `eda.ipynb`, `experiment-<model>-<variant>.ipynb`, `submission-<model>.ipynb`, and `report.ipynb`. Use lowercase kebab-case and singular `experiment`.
+- Store report HTML and its JSON manifest in `reports/<competition-slug>/`, with the exact notebook stem. Store per-notebook Kaggle settings as `<notebook-stem>.kaggle.json`; copy to `kernel-metadata.json` only in the upload package. Keep existing Kaggle notebook IDs stable when renaming local files.
 - Keep competition data and generated files in ignored competition-local directories such as `data/` and `output/`. Repository-wide temporary files belong in ignored `tmp/`.
 - Optional `competitions/<slug>/competition.json` supplies the Pages index title, public competition URL, and thumbnail URL; reports are grouped under each competition.
 - Keep shared operating instructions in `docs/`; keep machine diagnostics under untracked `.git/kaggle-devcontainer/`.

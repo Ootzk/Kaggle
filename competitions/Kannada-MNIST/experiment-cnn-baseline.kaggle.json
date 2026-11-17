@@ -1,7 +1,7 @@
 {
-  "id": "pocariblitz/kannada-mnist-submission",
-  "title": "Kannada MNIST Submission",
-  "code_file": "submission.ipynb",
+  "id": "pocariblitz/kannada-mnist-baseline",
+  "title": "Kannada MNIST Baseline",
+  "code_file": "experiment-cnn-baseline.ipynb",
   "language": "python",
   "kernel_type": "notebook",
   "is_private": true,
